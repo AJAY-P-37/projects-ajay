@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx", // ✅ REQUIRED
+    "jsxImportSource": "react", // optional, for React 17+
+    "module": "ESNext",
+    "moduleResolution": "bundler", // recommended for modern projects
+    "target": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"]
+    },
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist"
+  },
+
+  "include": ["src", "tailwind.config.ts", "tsup.config.ts"]
+}

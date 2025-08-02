@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      //   "@utils/*": ["packages/utils/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
