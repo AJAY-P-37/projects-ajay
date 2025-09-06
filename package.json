@@ -8,12 +8,16 @@
     "packages/*"
   ],
   "scripts": {
-    "frontend": "turbo dev --filter=frontend",
+    "frontend:dev": "turbo dev --filter=frontend",
     "frontend:build": "turbo build --filter=frontend",
+    "shadcn:dev": "turbo dev --filter=shadcn-lib",
+    "shadcn:build": "turbo build --filter=shadcn-lib",
+    "app:dev": "turbo dev --filter=frontend",
     "build": "turbo build",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"**/src/**/*.{js,ts,tsx,json,css,scss}\""
   },
   "repository": "git+https://github.com/AJAY-P-37/projects-ajay.git",
   "keywords": [
@@ -31,14 +35,21 @@
   "homepage": "https://github.com/AJAY-P-37/projects-ajay#readme",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@tailwindcss/cli": "^4.1.12",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
+    "autoprefixer": "^10.4.21",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-dom": "^1.52.3",
     "eslint-plugin-react-x": "^1.52.3",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.12",
     "turbo": "^2.5.5"
   },
   "packageManager": "yarn@4.9.2"

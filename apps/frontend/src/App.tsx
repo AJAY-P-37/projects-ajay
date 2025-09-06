@@ -1,11 +1,13 @@
 import "./App.css";
-import { LoginOrSignup } from "./pages/Auth/LoginOrSignup";
+import "shadcn-lib/dist/styles/globals.css";
+import { Login } from "./pages/Auth/LoginOrSignup";
 
 function App() {
   return (
     <>
       {/* <Expenses props={{}} /> */}
-      <LoginOrSignup />
+
+      <Login />
     </>
   );
 }

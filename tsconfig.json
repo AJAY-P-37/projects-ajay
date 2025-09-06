@@ -2,10 +2,10 @@
   "compilerOptions": {
     "jsx": "react",
     "composite": true,
-    "baseUrl": ".",
-    "paths": {
-      //   "@utils/*": ["packages/utils/src/*"]
-    }
+    "sourceMap": true
   },
-  "exclude": ["node_modules", "dist"]
+  "module": "ESNext",
+  "skipLibCheck": true,
+  "moduleResolution": "bundler",
+  "exclude": ["node_modules", "dist", "packages/*/dist"]
 }
