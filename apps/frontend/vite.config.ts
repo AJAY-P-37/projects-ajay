@@ -1,5 +1,4 @@
 import { defineConfig, UserConfig } from "vite";
-import tailwindcss from "@tailwindcss/vite";
 
 import path from "path";
 import react from "@vitejs/plugin-react-swc";
@@ -7,7 +6,7 @@ import react from "@vitejs/plugin-react-swc";
 // https://vitejs.dev/config/
 export default defineConfig((() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react()],
     server: {
       open: true,
       port: 5000,
