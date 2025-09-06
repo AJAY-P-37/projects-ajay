@@ -4,41 +4,61 @@ const config: Config = {
   darkMode: ["class"],
   content: ["./src/**/*.{js,ts,jsx,tsx}", "../../packages/shadcn-lib/src/**/*.{js,ts,jsx,tsx}"],
   plugins: [require("tailwindcss-animate")],
-  // ...existing code...
   theme: {
     extend: {
-      colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: "hsl(var(--card))",
-        "card-foreground": "hsl(var(--card-foreground))",
-        popover: "hsl(var(--popover))",
-        "popover-foreground": "hsl(var(--popover-foreground))",
-        primary: "hsl(var(--primary))",
-        "primary-foreground": "hsl(var(--primary-foreground))",
-        secondary: "hsl(var(--secondary))",
-        "secondary-foreground": "hsl(var(--secondary-foreground))",
-        muted: "hsl(var(--muted))",
-        "muted-foreground": "hsl(var(--muted-foreground))",
-        accent: "hsl(var(--accent))",
-        "accent-foreground": "hsl(var(--accent-foreground))",
-        destructive: "hsl(var(--destructive))",
-        "destructive-foreground": "hsl(var(--destructive-foreground))",
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        // Chart colors (optional, for custom usage)
-        "chart-1": "hsl(var(--chart-1))",
-        "chart-2": "hsl(var(--chart-2))",
-        "chart-3": "hsl(var(--chart-3))",
-        "chart-4": "hsl(var(--chart-4))",
-        "chart-5": "hsl(var(--chart-5))",
-      },
       borderRadius: {
         DEFAULT: "var(--radius)",
+        lg: "calc(var(--radius) + 2px)",
+        md: "var(--radius)",
+        sm: "calc(var(--radius) - 2px)",
+      },
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+
+        card: "var(--card)",
+        "card-foreground": "var(--card-foreground)",
+
+        popover: "var(--popover)",
+        "popover-foreground": "var(--popover-foreground)",
+
+        primary: "var(--primary)",
+        "primary-foreground": "var(--primary-foreground)",
+
+        secondary: "var(--secondary)",
+        "secondary-foreground": "var(--secondary-foreground)",
+
+        muted: "var(--muted)",
+        "muted-foreground": "var(--muted-foreground)",
+
+        accent: "var(--accent)",
+        "accent-foreground": "var(--accent-foreground)",
+
+        destructive: "var(--destructive)",
+        "destructive-foreground": "var(--foreground)",
+
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+
+        // charts
+        "chart-1": "var(--chart-1)",
+        "chart-2": "var(--chart-2)",
+        "chart-3": "var(--chart-3)",
+        "chart-4": "var(--chart-4)",
+        "chart-5": "var(--chart-5)",
+
+        // sidebar
+        sidebar: "var(--sidebar)",
+        "sidebar-foreground": "var(--sidebar-foreground)",
+        "sidebar-primary": "var(--sidebar-primary)",
+        "sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
+        "sidebar-accent": "var(--sidebar-accent)",
+        "sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
+        "sidebar-border": "var(--sidebar-border)",
+        "sidebar-ring": "var(--sidebar-ring)",
       },
     },
   },
-  // ...existing code...
 };
 export default config;
