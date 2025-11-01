@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "rootDir": "src", // Source files in src
+    "outDir": "dist", // Output to dist
+    "sourceMap": true,
+    "declaration": true,
+    "module": "CommonJS", // 👈 switch
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "compileOnSave": true,
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

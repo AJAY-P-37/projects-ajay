@@ -1,13 +1,20 @@
 import "./App.css";
-import { LoginForm } from "./pages/Auth/LoginOrSignup";
-import { AppMainSidebar } from "./components/common/sidebar/app-sidebar";
+// import "shadcn-lib/dist/styles/globals.css";
+import { RouterProvider } from "react-router-dom";
+import { Provider } from "react-redux";
+import { ROUTER } from "./routes/routes";
+import { store } from "./store/store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
+  const queryClient = new QueryClient();
   return (
     <>
-      <AppMainSidebar>
-        <LoginForm />
-      </AppMainSidebar>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={ROUTER} />
+        </QueryClientProvider>
+      </Provider>
     </>
   );
 }

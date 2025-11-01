@@ -18,13 +18,17 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
   SidebarRail,
 } from "shadcn-lib/dist/components/ui/sidebar";
 import { TeamSwitcher } from "./team";
 import { NavMain } from "./nav";
 import { NavUser } from "./user";
 import { NavProjects } from "./projects";
+import { Mode } from "../mode";
 
 // This is sample data.
 const data = {
@@ -35,19 +39,9 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Projects Ajay",
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      plan: "Personal",
     },
   ],
   navMain: [
@@ -139,19 +133,9 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "Expense Management",
       url: "#",
       icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 };
@@ -165,6 +149,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
+      </SidebarContent>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Mode</SidebarGroupLabel>
+          <SidebarMenu>
+            <Mode />
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

@@ -13,7 +13,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "shadcn-lib/dist/components/ui/breadcrumb";
-import { Mode } from "../mode";
 
 export const AppMainSidebar = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -29,7 +28,7 @@ export const AppMainSidebar = ({ children }: { children: React.ReactNode }) => {
                   orientation='vertical'
                   className='mr-2 data-[orientation=vertical]:h-4'
                 />
-                {/* <Breadcrumb>
+                <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem className='hidden md:block'>
                       <BreadcrumbLink href='#'>Building Your Application</BreadcrumbLink>
@@ -39,9 +38,8 @@ export const AppMainSidebar = ({ children }: { children: React.ReactNode }) => {
                       <BreadcrumbPage>Data Fetching</BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
-                </Breadcrumb> */}
+                </Breadcrumb>
               </div>
-              <Mode />
             </header>
             {children}
           </SidebarInset>
