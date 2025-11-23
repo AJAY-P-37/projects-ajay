@@ -13,8 +13,8 @@ export class AuthModule {
       .apply(AuthMiddleware)
       .exclude(
         { path: "auth/signin", method: RequestMethod.POST },
-        { path: "auth/firebase", method: RequestMethod.POST },
-      );
-    // .forRoutes("*"); // apply to all other routes
+        { path: "auth/signout", method: RequestMethod.POST },
+      )
+      .forRoutes("*"); // apply to all other routes
   }
 }

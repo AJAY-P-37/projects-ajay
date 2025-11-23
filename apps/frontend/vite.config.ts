@@ -30,16 +30,9 @@ export default defineConfig((({ mode }) => {
       preserveSymlinks: true,
     },
     build: {
-      lib: {
-        entry: path.resolve(__dirname, "src/main.tsx"),
-        name: "Frontend",
-        fileName: "main",
-      },
-      sourcemap: "inline",
+      outDir: "dist",
+      sourcemap: true,
       emptyOutDir: true,
-      rollupOptions: {
-        external: ["react", "react-dom"],
-      },
     },
     define: {
       "import.meta.env.VITE_BUILD_TIMESTAMP": JSON.stringify(new Date().toISOString()),

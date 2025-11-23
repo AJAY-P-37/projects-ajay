@@ -5,7 +5,7 @@ import importPlugin from "eslint-plugin-import";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import react from "eslint-plugin-react";
 import * as tseslint from "typescript-eslint";
-import { parserOptions } from "./apps/backend/.eslintrc";
+// import { parserOptions } from "./apps/backend/.eslintrc";
 
 export default [
   js.configs.recommended,

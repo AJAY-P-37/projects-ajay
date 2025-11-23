@@ -5,46 +5,20 @@ import {
   SidebarTrigger,
 } from "shadcn-lib/dist/components/ui/sidebar";
 import { AppSidebar } from "./sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "shadcn-lib/dist/components/ui/breadcrumb";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 export const AppMainSidebar = ({ children }: { children: React.ReactNode }) => {
+  const { heading } = useSelector((state: RootState) => state.nav);
   return (
     <>
-      <div>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
-              <div className='flex items-center gap-2 px-4'>
-                <SidebarTrigger className='-ml-1' />
-                <SidebarSeparator
-                  orientation='vertical'
-                  className='mr-2 data-[orientation=vertical]:h-4'
-                />
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem className='hidden md:block'>
-                      <BreadcrumbLink href='#'>Building Your Application</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator className='hidden md:block' />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </div>
-            </header>
-            {children}
-          </SidebarInset>
-        </SidebarProvider>
-      </div>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className='bg-card relative overflow-hidden max-w-full max-h-[100vh]'>
+          <SidebarTrigger className='sticky top-2 z-50' />
+          <div className='overflow-auto'>{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
     </>
   );
 };

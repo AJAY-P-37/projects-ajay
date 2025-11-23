@@ -1,18 +1,11 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { Injectable, OnModuleInit, UnauthorizedException } from "@nestjs/common";
 import * as admin from "firebase-admin";
-// import * as jwt from "jsonwebtoken";
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
 import { UsersService } from "../users/users.service";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { IUser } from "common-types/types/auth";
-// import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { IUser } from "common-types/dist/types/auth";
+import { Bucket } from "@google-cloud/storage";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// import * as jwt from "jsonwebtoken";
 
 const serviceAccount = {
   type: process.env.ACCOUNT_TYPE,
@@ -27,21 +20,6 @@ const serviceAccount = {
   client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
   universe_domain: process.env.UNIVERSE_DOMAIN,
 };
-
-const firebaseConfig = {
-  apiKey: process.env.API_KEY,
-  authDomain: process.env.AUTH_DOMAIN,
-  projectId: process.env.PROJECT_ID,
-  storageBucket: process.env.STORAGE_BUCKET,
-  messagingSenderId: process.env.MESSAGING_SENDER_ID,
-  appId: process.env.APP_ID,
-  measurementId: process.env.MEASUREMENT_ID,
-};
-
-// Initialize Firebase
-export const firebaseApp = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
-
 @Injectable()
 export class FirebaseService implements OnModuleInit {
   // private readonly jwtSecret = process.env.JWT_SECRET || "supersecret";
@@ -54,10 +32,28 @@ export class FirebaseService implements OnModuleInit {
       });
     }
   }
+
+  getFirebaseStorage = (): Bucket => {
+    return admin.storage().bucket(process.env.STORAGE_BUCKET);
+  };
+
+  /** 🔹 Helper: Generate signed URL */
+  getDownloadUrlFromFirebaseStorageBucket = async (filePath: string): Promise<string> => {
+    const storageBucket: Bucket = this.getFirebaseStorage();
+
+    const file = storageBucket.file(filePath);
+    const [url] = await file.getSignedUrl({
+      action: "read",
+      expires: "03-09-2030",
+    });
+    return url;
+  };
+
   authenticateUserFromFirebase = async (idToken: string): Promise<IUser | null> => {
     const decoded: DecodedIdToken = await this.verifyToken(idToken);
 
     let user = await this.usersService.findUserByUid(decoded.uid);
+    // await admin.auth().revokeRefreshTokens(decoded.uid);
 
     if (!user) {
       user = await this.usersService.createUser({
@@ -85,7 +81,15 @@ export class FirebaseService implements OnModuleInit {
     // );
   };
 
-  async verifyToken(token: string): Promise<admin.auth.DecodedIdToken> {
-    return await admin.auth().verifyIdToken(token);
+  async verifyToken(token: string) {
+    try {
+      return await admin.auth().verifyIdToken(token);
+    } catch (err: any) {
+      if (err?.code === "auth/id-token-expired") {
+        throw new UnauthorizedException("id-token-expired");
+      }
+
+      throw new UnauthorizedException(err.message || "Invalid token");
+    }
   }
 }

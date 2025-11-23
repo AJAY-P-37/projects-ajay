@@ -1,18 +1,8 @@
 import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, Auth } from "firebase/auth";
 import { firebaseApp } from "@/modules/firebase/firebase";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
-import { LoginRequest, LoginResponse } from "common-types/types/auth";
+import { IUser, LoginRequest, LoginResponse } from "common-types/types/auth";
 import { api } from "./Service";
-
-export interface IUser {
-  uid: string; // Firebase UID
-  name?: string;
-  email: string;
-  username?: string;
-  role: "admin" | "user";
-  authType: "google" | "password";
-  picture?: string;
-}
 export interface IToken {
   token: string;
 }
@@ -26,6 +16,10 @@ export default class AuthService {
     this.firebaseAuth = getAuth(firebaseApp);
   }
 
+  public getFirebaseAuth = () => {
+    return this.firebaseAuth;
+  };
+
   public loginWithPassword = (email: string, password: string) => {};
 
   public loginWithGoogle = async (): Promise<LoginResponse | null> => {
@@ -36,7 +30,9 @@ export default class AuthService {
 
         const loginRequest: LoginRequest = { idToken };
 
-        const { data, status } = await api.post("/api/auth/signin", loginRequest);
+        const { data, status } = await api.post("/api/auth/signin", loginRequest, {
+          withCredentials: true,
+        });
         if (data?.message === "Authenticated" && status === 200) {
           Toast.success(data.message);
           return data as LoginResponse;
@@ -53,25 +49,24 @@ export default class AuthService {
   };
 
   async isAuthenticated() {
-    const token = localStorage.getItem("authToken");
+    // const token = localStorage.getItem("authToken");
 
-    if (!token) return { isAuthenticated: false };
+    // if (!token) return { isAuthenticated: false };
+    try {
+      const { data } = await api.get("/api/auth/isAuthenticated");
 
-    // Optionally verify token with backend
-    const { data, status } = await api.get("/api/auth/isAuthenticated", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (data?.message !== "Authenticated" || status !== 200) {
+      return { isAuthenticated: true, user: data.user };
+    } catch {
       return { isAuthenticated: false };
     }
-
-    const { user } = data;
-    return { isAuthenticated: true, user };
   }
 
   signOut = async () => {
+    const { data } = await api.post("/api/auth/signout");
     await signOut(this.firebaseAuth);
+    if (data?.message) {
+      Toast.success(data.message);
+    }
   };
 
   public signupWithPassword = (email: string, password: string) => {};

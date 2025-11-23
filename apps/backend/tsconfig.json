@@ -8,8 +8,6 @@
     "strict": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "rootDir": "src", // Source files in src
-    "outDir": "dist", // Output to dist
     "sourceMap": true,
     "declaration": true,
     "module": "CommonJS", // 👈 switch

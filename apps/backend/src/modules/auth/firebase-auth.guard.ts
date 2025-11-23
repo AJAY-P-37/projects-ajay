@@ -5,16 +5,16 @@ import { FirebaseService } from "./firebase.service";
 export class AuthMiddleware implements NestMiddleware {
   constructor(private readonly authService: FirebaseService) {}
 
-  use(req: any, res: any, next: () => void) {
-    const token = req.cookies?.token || req.headers["authorization"]?.split(" ")[1];
+  async use(req: any, res: any, next: () => void) {
+    const token = req.cookies?.token;
     if (!token) throw new UnauthorizedException("No token provided");
 
     try {
-      const decoded = this.authService.verifyToken(token);
+      const decoded = await this.authService.verifyToken(token);
       req.user = decoded; // attach user to request
       next();
     } catch (err) {
-      throw new UnauthorizedException("Invalid token");
+      throw err;
     }
   }
 }

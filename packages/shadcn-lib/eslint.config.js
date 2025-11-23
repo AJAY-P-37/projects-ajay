@@ -30,8 +30,8 @@ export default tseslint.config([
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    rules:{
-      "react-refresh/only-export-components": "off"
-    }
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
   },
 ]);

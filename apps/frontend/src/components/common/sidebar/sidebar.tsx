@@ -29,14 +29,11 @@ import { NavMain } from "./nav";
 import { NavUser } from "./user";
 import { NavProjects } from "./projects";
 import { Mode } from "../mode";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "Projects Ajay",
@@ -134,13 +131,14 @@ const data = {
   projects: [
     {
       name: "Expense Management",
-      url: "#",
+      url: "/projects/expenses",
       icon: Frame,
     },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useSelector((state: RootState) => state.auth.user);
   return (
     <Sidebar collapsible='icon' {...props}>
       <SidebarHeader>
@@ -149,8 +147,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Mode</SidebarGroupLabel>
           <SidebarMenu>
@@ -159,7 +155,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            ...user,
+            picture: user?.picture || "",
+            name: user?.name || user?.email,
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

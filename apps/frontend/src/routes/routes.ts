@@ -1,6 +1,6 @@
 import { MainContainer } from "@/components/common/main/MainContainer";
 import { LoginForm } from "@/pages/auth/LoginOrSignup";
-import { Expenses } from "@/pages/projects/expenses/Expenses";
+import { Expenses } from "@/pages/projects/expenses/monthlyTracker/MonthlyExpenses";
 import { createBrowserRouter, RouteObject } from "react-router-dom";
 import { ProtectedRoutes } from "./ProtectedRoutes";
 import { Projects } from "@/pages/projects";

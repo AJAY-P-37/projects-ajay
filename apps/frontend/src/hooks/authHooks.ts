@@ -4,6 +4,8 @@ import { loginStart, loginSuccess, loginFailure, logout } from "../store/slices/
 import AuthService from "@/services/AuthService";
 import { LoginResponse } from "common-types/types/auth";
 import { useNavigate, useLocation } from "react-router-dom";
+import { logoutAction } from "@/store/actions/globalActions";
+import { persistor } from "@/store/store";
 
 export const useLogin = () => {
   const authService = new AuthService();
@@ -43,6 +45,8 @@ export const useLogout = () => {
     await authService.signOut();
     localStorage.removeItem("authToken");
     dispatch(logout());
+    dispatch(logoutAction());
+    persistor.purge();
     navigate("/auth", { state: { from: location } });
     // Invalidate relevant TanStack Query caches if needed
     // Refetch authentication state
@@ -52,6 +56,7 @@ export const useLogout = () => {
 
 export const useAuthCheck = () => {
   const authService = new AuthService();
+  const dispatch = useDispatch();
 
   const query = useQuery({
     queryKey: ["auth", "isAuthenticated"],
@@ -64,10 +69,13 @@ export const useAuthCheck = () => {
     refetchOnMount: "always", // Always revalidate when the component mounts
   });
 
+  if (query.isSuccess && query.data?.isAuthenticated) {
+    dispatch(loginSuccess(query.data));
+  }
+
   return {
     isAuthenticated: query.data?.isAuthenticated || false,
     isLoading: query.isLoading || query.isFetching,
-    data: query.data,
-    refetch: query.refetch,
+    // data: query.data,
   };
 };

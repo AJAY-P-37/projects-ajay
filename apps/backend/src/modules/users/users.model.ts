@@ -2,7 +2,7 @@
 import { Model, Schema, Document, Connection } from "mongoose";
 // import bcrypt from "bcrypt";
 import { MongoDB } from "../../mongo/mongoose";
-import { IUser } from "common-types/types/auth";
+import { IUser } from "common-types/dist/types/auth";
 
 /** ============================
  *  USER INTERFACES
@@ -20,7 +20,6 @@ const userSchema = new Schema<IUserDocument>(
     uid: { type: String, required: true, unique: true },
     name: String,
     email: { type: String, required: true, unique: true },
-    username: String,
     role: { type: String, enum: ["admin", "user"], default: "user" },
     authType: { type: String, enum: ["google", "password"], required: true },
     picture: String,

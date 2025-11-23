@@ -20,22 +20,27 @@
   ],
   "scripts": {
     "dev": "rm -rf node_modules dist && vite",
-    "build": "rm -rf dist && tsc -b && vite build",
+    "build": "rm -rf dist && vite build",
+    "build:prod": "rm -rf dist && vite build --mode production",
     "clean": "rm -rf node_modules dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@reduxjs/toolkit": "^2.9.2",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.87.4",
     "@tanstack/react-query-devtools": "^5.83.0",
+    "@tanstack/react-table": "^8.21.3",
+    "@types/redux-persist": "^4.3.1",
     "autoprefixer": "^10.4.21",
     "axios": "^1.12.2",
+    "clsx": "^2.1.1",
     "common-types": "workspace:*",
     "firebase": "^12.2.1",
     "postcss": "^8.5.6",
-    "react-hook-form": "^7.61.1",
+    "react-hook-form": "^7.66.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.1",
     "redux": "^5.0.1",
@@ -43,7 +48,8 @@
     "shadcn-lib": "workspace:*",
     "tailwind-merge": "^2.4.0",
     "tailwindcss": "^3.4.6",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
