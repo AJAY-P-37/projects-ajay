@@ -88,6 +88,7 @@ export const expenseColumns = ({
           title='Date'
           ui='date'
           filter={true}
+          sort={true}
         />
       ),
       meta: { width: 60 },
@@ -111,6 +112,7 @@ export const expenseColumns = ({
           title='Amount'
           ui='input'
           filter={true}
+          sort={true}
         />
       ),
       filterFn: numberFilter,
@@ -136,6 +138,7 @@ export const expenseColumns = ({
           ui='select'
           options={categories}
           filter={true}
+          sort={true}
         />
       ),
       meta: { width: 150 },
@@ -159,6 +162,7 @@ export const expenseColumns = ({
           title='Statement Record'
           ui='input'
           filter={true}
+          sort={true}
         />
       ),
       meta: { width: 300 },
@@ -177,6 +181,7 @@ export const expenseColumns = ({
           ui='select'
           options={statementDocumentOptions}
           filter={true}
+          sort={true}
         />
       ),
       meta: { width: 260 },

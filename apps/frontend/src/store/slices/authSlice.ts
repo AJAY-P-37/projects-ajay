@@ -4,14 +4,12 @@ import { IUser } from "common-types/types/auth";
 export interface IAuthState {
   user: IUser | null;
   isAuthenticated: boolean;
-  token: string | null;
   loading: boolean;
   error: string | null;
 }
 const initialState: IAuthState = {
   user: null,
   isAuthenticated: false,
-  token: null,
   loading: false,
   error: null,
 };
@@ -28,7 +26,6 @@ const authSlice = createSlice({
       state.loading = false;
       state.isAuthenticated = true;
       state.user = action.payload.user;
-      state.token = action.payload.token;
     },
     loginFailure: (state, action) => {
       state.loading = false;
@@ -38,7 +35,6 @@ const authSlice = createSlice({
       state.user = null;
       state.loading = false;
       state.isAuthenticated = false;
-      state.token = null;
     },
   },
 });

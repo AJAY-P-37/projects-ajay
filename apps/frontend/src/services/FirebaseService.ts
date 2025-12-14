@@ -1,7 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
-import { getStorage, ref as refStorage, uploadBytes, UploadResult } from "firebase/storage";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import {
+  getStorage,
+  ref as refStorage,
+  uploadBytes,
+  UploadResult,
+  deleteObject,
+} from "firebase/storage";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
 
 // Your web app's Firebase configuration
@@ -19,11 +24,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
-// const database = getDatabase(firebaseApp);
-// const analytics = getAnalytics(app);
-
 const functions = getFunctions(firebaseApp);
-export const auth = getAuth(firebaseApp);
 if (window.location.hostname === "localhost") {
   connectFunctionsEmulator(functions, "localhost", 5001);
   //   firebaseApp.auth().useEmulator("http://localhost:9099");
@@ -33,46 +34,19 @@ if (window.location.hostname === "localhost") {
   //   });
 }
 
-// class FirebaseFunctions {
-//   static callFirebase = async (path = "", data = {}, method = "GET") => {
-//     try {
-//       const firebaseCallableInstance = httpsCallable(functions, "firebaseWrapper");
-//       const response = await firebaseCallableInstance({ path, method, data });
-//       console.log(response.data.data);
-//       const responseData = response.data;
-//       const errorMessage =
-//         (responseData.data && responseData.data.message) || "Something went wrong!!";
-//       if (responseData.status >= 400) {
-//         toast.error(errorMessage);
-//         throw new Error(errorMessage);
-//       }
-//       return responseData.data;
-//     } catch (error) {
-//       console.log(error);
-//       return error;
-//     }
-//   };
-//   static get = async (path = "", data = {}) => {
-//     return await FirebaseFunctions.callFirebase(path, data, "GET");
-//   };
-//   static post = async (path = "", data = {}) => {
-//     return await FirebaseFunctions.callFirebase(path, data, "POST");
-//   };
-// }
-// const firebaseFunctions = new Firebase();
-
-const storage = getStorage(firebaseApp);
-
 interface UploadResultData {
   fileName: string;
   fullPath: string;
   snapshot: UploadResult;
 }
 
+const storage = getStorage(firebaseApp);
+
 export class FirebaseService {
   public static uploadFilesToFirebase = async (
     files: File[] | File,
     path: string,
+    fileName?: string,
   ): Promise<UploadResultData[] | null> => {
     if (!files || (Array.isArray(files) && files.length === 0)) {
       console.warn("⚠️ No files provided for upload.");
@@ -84,27 +58,39 @@ export class FirebaseService {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
     try {
-      const uploadResults = await Promise.all(
+      const uploadResults = [];
+      await Promise.all(
         filesArray.map(async (file) => {
           const storageRef = refStorage(storage, `${path}/${file.name}_${timestamp}`);
           const snapshot = await uploadBytes(storageRef, file);
 
           console.log("✅ Uploaded:", file.name, snapshot);
 
-          return {
+          uploadResults.push({
+            storageRef,
             fileName: file.name,
-            fullPath: snapshot.ref.fullPath,
+            fullPath: snapshot.metadata.fullPath,
             snapshot,
-          };
+          });
         }),
       );
 
-      Toast.success("File(s) uploaded successfully.");
+      fileName && Toast.success(`${fileName} File(s) uploaded successfully.`);
       return uploadResults;
     } catch (error: any) {
       console.error("❌ Upload failed:", error);
       Toast.error(error?.message || "Failed to upload file(s).");
       return null;
+    }
+  };
+  public static deleteFileFromStorage = async (fullPath: string, fileName: string = null) => {
+    try {
+      const fileRef = refStorage(storage, fullPath);
+
+      await deleteObject(fileRef);
+      fileName && Toast.success(`File deleted: ${fileName}`);
+    } catch (err) {
+      Toast.error(`Error deleting file: ${err}`);
     }
   };
 }

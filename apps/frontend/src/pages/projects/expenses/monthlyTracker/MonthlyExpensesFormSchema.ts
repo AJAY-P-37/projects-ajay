@@ -3,7 +3,9 @@ import { z } from "zod";
 // ---------------- ZOD SCHEMA ----------------
 const statementItemSchema = z.object({
   type: z.string().min(1, "Please select a statement type"),
-  file: z.instanceof(File, { message: "Please upload a file" }),
+  file: z
+    .array(z.instanceof(File, { message: "Please upload a file" }))
+    .min(1, "Add at least one file"),
 });
 
 export const expensesSchema = z.object({
@@ -22,6 +24,13 @@ export const currentYear = String(new Date().getFullYear());
 export const years = Array.from({ length: 4 }, (_, i) => {
   const year = Number(currentYear) - i;
   return { value: String(year), label: String(year) };
+});
+export const currentMonthName = new Date(
+  new Date().getFullYear(),
+  new Date().getMonth() - 1,
+  1,
+).toLocaleString("default", {
+  month: "long",
 });
 
 export type ExpensesFormData = z.infer<typeof expensesSchema>;

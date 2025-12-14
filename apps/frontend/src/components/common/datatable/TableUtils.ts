@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ZodSchema } from "zod";
 import { TableErrors } from "./DataTable";
 import { RefObject } from "react";
+import * as XLSX from "xlsx";
 
 export const collectRowErrors = <T>(
   rowId: string,
@@ -92,4 +93,32 @@ export const removeRowHighlight = (
   className: string,
 ) => {
   rowRefs.current[rowId].classList.remove(className);
+};
+
+export const parseExcel = async (file: File): Promise<any[]> => {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        // Convert Excel rows -> desired format
+
+        resolve(json);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsArrayBuffer(file);
+  });
 };

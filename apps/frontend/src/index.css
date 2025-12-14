@@ -1,1 +1,9 @@
 /* @import "tailwindcss"; */
+.recharts-cartesian-axis-tick-value {
+  fill: rgba(255, 255, 255, 1); /* dark mode */
+  font-size: 12px;
+}
+
+.light .recharts-cartesian-axis-tick-value {
+  fill: rgba(0, 0, 0, 1);
+}

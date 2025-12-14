@@ -1,39 +1,33 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AppMainSidebar } from "../sidebar/app-sidebar";
-import { useAuthCheck, useLogout } from "@/hooks/authHooks";
+import { useAuthCheck } from "@/hooks/authHooks";
 import { Skeleton } from "shadcn-lib/dist/components/ui/skeleton";
 
 export const MainContainer = () => {
   const { isAuthenticated, isLoading } = useAuthCheck();
   const location = useLocation();
-  const logout = useLogout();
 
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className='flex flex-1 flex-col gap-4 p-4'>
-        {/* <Skeleton className='grid auto-rows-min gap-4 md:grid-cols-3'>
-          <Skeleton className='bg-muted/50 aspect-video rounded-xl' />
-          <Skeleton className='bg-muted/50 aspect-video rounded-xl' />
-          <Skeleton className='bg-muted/50 aspect-video rounded-xl' />
-        </Skeleton> */}
-        <Skeleton className='bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min' />
+      <div className='flex flex-1 p-4'>
+        <Skeleton className='min-h-[100vh] flex-1 rounded-xl' />
       </div>
     );
+  }
 
   const isAuthRoute = location.pathname.startsWith("/auth");
 
-  // 🚫 User not logged in and not already on /auth → redirect to /auth
+  // 🚫 unauthenticated → auth pages only
   if (!isAuthenticated && !isAuthRoute) {
-    logout();
-    return <Navigate to='/auth' state={{ from: location }} replace />;
+    return <Navigate to='/auth' replace />;
   }
 
-  // ✅ User logged in but tries to visit /auth → redirect to home
+  // 🚫 authenticated users should not see auth pages
   if (isAuthenticated && isAuthRoute) {
     return <Navigate to='/' replace />;
   }
 
-  // ✅ Wrap everything else with sidebar if logged in
+  // ✅ app layout
   return isAuthenticated ? (
     <AppMainSidebar>
       <Outlet />

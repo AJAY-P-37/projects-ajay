@@ -1,4 +1,4 @@
-import { IProcessExpenseFileRequest } from "common-types/types/expenses";
+import { IExpensesCategory, IProcessExpenseFileRequest } from "common-types/types/expenses";
 import { api } from "./Service";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
 
@@ -10,20 +10,19 @@ export default class ExpensesService {
     month,
     year,
     statementType,
-    statementFileMetadata,
+    statementFilesMetadata,
   }: IProcessExpenseFileRequest) => {
     const { data, status } = await api.post(`${this.basePath}/processMonthlyExpenseStatements`, {
       month,
       year,
       statementType,
-      statementFileMetadata,
+      statementFilesMetadata,
     });
 
-    if (status !== 200) {
-      Toast.error(data?.message || "Could not process your Statements! Please contact Admin");
-      return data;
-    } else {
-      Toast.success(data?.message || "Processed your statement(s)");
+    if (status === 200) {
+      Toast.success(data?.message || `Processed your ${statementType} card statement(s)`);
+    } else if (data?.error?.message && (status < 400 || status >= 500)) {
+      Toast.error(data?.error?.message || "Something went wrong");
     }
     return data;
   };
@@ -34,10 +33,10 @@ export default class ExpensesService {
       year,
       expenseData,
     });
-    if (status !== 200) {
-      Toast.error(data?.message || "Could not save your Expense Data! Please contact Admin");
-    } else {
+    if (status === 200) {
       Toast.success(data?.message || "Saved your monthly expense data");
+    } else if (data?.message && status >= 500) {
+      Toast.error(data?.message || "Could not save your Expense Data! Please contact Admin");
     }
     return data;
   };
@@ -46,10 +45,50 @@ export default class ExpensesService {
     const { data, status } = await api.get(
       `${this.basePath}/getMonthlyExpensesPivotTable?year=${year}&month=${month}`,
     );
-    if (status !== 200) {
-      Toast.error(data?.message || "Could not get expense data");
-    } else {
+    if (status === 200) {
       Toast.success(data?.message || "Retrieved your consolidated expense data");
+    } else if (data?.message && status >= 500) {
+      Toast.error(data?.message || "Could not get expense data");
+    }
+    return data;
+  };
+
+  public getCategories = async () => {
+    const { data, status } = await api.get(`${this.basePath}/getCategories`);
+    if (data?.message && status >= 500) {
+      Toast.error(data?.message || "Could not get Categories data");
+    }
+    return data;
+  };
+
+  public saveCategories = async (categories: IExpensesCategory[]) => {
+    const { data, status } = await api.post(`${this.basePath}/saveCategories`, {
+      categories,
+    });
+    if (status === 200) {
+      Toast.success(data?.message || "Saved your monthly updated Categories");
+    } else if (data?.error?.message && status >= 500) {
+      Toast.error(data?.message || "Could not save your Categories! Please contact Admin");
+    }
+    return data;
+  };
+
+  public getYearlyConsolidatedPivotTable = async (year: number) => {
+    const { data, status } = await api.get(
+      `${this.basePath}/getYearlyConsolidatedPivotTable/${year}`,
+    );
+    if (data?.message && status >= 500) {
+      Toast.error(data?.message || "Could not get Monthly Consolidated Expenses data");
+    }
+    return data;
+  };
+
+  public getMonthlyConsolidatedPivotTable = async (year: number) => {
+    const { data, status } = await api.get(
+      `${this.basePath}/getMonthlyConsolidatedPivotTable/${year}`,
+    );
+    if (data?.message && status >= 500) {
+      Toast.error(data?.message || "Could not get Monthly Consolidated Expenses data");
     }
     return data;
   };

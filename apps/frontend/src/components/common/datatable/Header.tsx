@@ -19,7 +19,7 @@ import {
 } from "shadcn-lib/dist/components/ui/dropdown-menu";
 import { Input } from "shadcn-lib/dist/components/ui/input";
 import { getAccessorKey } from "./TableUtils";
-import { getCellType } from "./EditableCell";
+import { getCellType, UIType } from "./EditableCell";
 import { ErrorPopover } from "./ErrorPopover";
 
 interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes<HTMLDivElement> {
@@ -27,9 +27,10 @@ interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes
   header: Header<TData, TValue>;
   table: Table<TData>;
   title: string;
-  ui: string;
+  ui: UIType;
   options?: { label: string; value: string }[] | string[];
   filter?: boolean;
+  sort?: boolean;
 }
 export function DataTableColumnHeader<TData, TValue>({
   column,
@@ -40,6 +41,7 @@ export function DataTableColumnHeader<TData, TValue>({
   ui,
   options = [],
   filter = false,
+  sort = false,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
     return (
@@ -82,38 +84,48 @@ export function DataTableColumnHeader<TData, TValue>({
       )}
 
       {/* Column Header */}
-      <div className={cn("flex items-center justify-center w-full border-t pt-2", className)}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='flex items-center gap-2 h-8 px-2 text-sm hover:bg-accent data-[state=open]:bg-accent rounded-md'
-            >
-              <span className='font-medium'>{title}</span>
-              {column.getIsSorted() === "desc" ? (
-                <ArrowDown className='h-4 w-4' />
-              ) : column.getIsSorted() === "asc" ? (
-                <ArrowUp className='h-4 w-4' />
-              ) : (
-                <ChevronsUpDown className='h-4 w-4 opacity-50' />
-              )}
-            </Button>
-          </DropdownMenuTrigger>
+      <div
+        className={cn(
+          "flex items-center justify-center w-full pt-2",
+          filter && "border-t",
+          className,
+        )}
+      >
+        {sort ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant='ghost'
+                size='sm'
+                className='flex items-center gap-2 h-8 px-2 text-sm rounded-md'
+              >
+                <span className='font-medium'>{title}</span>
+                {column.getIsSorted() === "desc" ? (
+                  <ArrowDown className='h-4 w-4' />
+                ) : column.getIsSorted() === "asc" ? (
+                  <ArrowUp className='h-4 w-4' />
+                ) : (
+                  <ChevronsUpDown className='h-4 w-4 opacity-50' />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent align='start' className='w-32 text-sm'>
-            <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-              <ArrowUp className='h-4 w-4 mr-2' /> Asc
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-              <ArrowDown className='h-4 w-4 mr-2' /> Desc
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
-              <EyeOff className='h-4 w-4 mr-2' /> Hide
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenuContent align='start' className='w-32 text-sm'>
+              <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                <ArrowUp className='h-4 w-4 mr-2' /> Asc
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                <ArrowDown className='h-4 w-4 mr-2' /> Desc
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
+                <EyeOff className='h-4 w-4 mr-2' /> Hide
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <span className='font-medium'>{title}</span>
+        )}
       </div>
     </div>
   );

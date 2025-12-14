@@ -1,11 +1,13 @@
 import { MainContainer } from "@/components/common/main/MainContainer";
-import { LoginForm } from "@/pages/auth/LoginOrSignup";
-import { Expenses } from "@/pages/projects/expenses/monthlyTracker/MonthlyExpenses";
+import { LoginOrSignupForm } from "@/pages/auth/LoginOrSignup";
 import { createBrowserRouter, RouteObject } from "react-router-dom";
 import { ProtectedRoutes } from "./ProtectedRoutes";
 import { Projects } from "@/pages/projects";
 import { Home } from "@/pages/home";
 import { Error } from "@/pages/error";
+import { Expenses } from "@/pages/projects/expenses/monthlyTracker/MonthlyExpenses";
+import { AddCategories } from "@/pages/projects/expenses/addCategories/CategorizeExpenses";
+import { VisualizeExpenses } from "@/pages/projects/expenses/visualize/VisualizeExpenses";
 
 const Routes: RouteObject[] = [
   {
@@ -15,14 +17,16 @@ const Routes: RouteObject[] = [
       { index: true, Component: Home },
       {
         path: "/auth",
-        Component: LoginForm,
+        Component: LoginOrSignupForm,
       },
       {
         path: "projects",
         Component: ProtectedRoutes,
         children: [
           { index: true, Component: Projects },
-          { path: "expenses", Component: Expenses },
+          { path: "expenses/monthlyTracker", Component: Expenses },
+          { path: "expenses/addCategories", Component: AddCategories },
+          { path: "expenses/visualize", Component: VisualizeExpenses },
         ],
       },
     ],

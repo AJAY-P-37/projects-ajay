@@ -8,19 +8,22 @@ export interface IExpense {
 }
 
 export enum EStatementType {
-  hdfcDebit = "hdfcDebit",
-  hdfcCredit = "hdfcCredit",
-  sbiDebit = "sbiDebit",
-  sbiCredit = "sbiCredit",
+  hdfcDebit = "HDFC_Debit",
+  hdfcCredit = "HDFC_Credit",
+  sbiDebit = "SBI_Debit",
+  sbiCredit = "SBI_Credit",
+  cubDebit = "CUB_Debit",
+  unknown = "unknown",
 }
 
+export interface StatementFileMetadata {
+  fullPath: string;
+}
 export interface IProcessExpenseFileRequest {
   month: number;
   year: number;
   statementType: string;
-  statementFileMetadata: {
-    fullPath: string;
-  };
+  statementFilesMetadata: StatementFileMetadata[];
 }
 
 export const statementDocumentOptions = [
@@ -28,11 +31,19 @@ export const statementDocumentOptions = [
   { value: EStatementType.hdfcCredit, label: "HDFC Bank Credit Statement" },
   { value: EStatementType.sbiDebit, label: "SBI Bank Debit Statement" },
   { value: EStatementType.sbiCredit, label: "SBI Bank Credit Statement" },
+  { value: EStatementType.cubDebit, label: "CUB Bank Debit Statement" },
+  { value: EStatementType.unknown, label: "Unknown Bank Statement" },
 ];
 
-export interface IExpenseCategory {
+export interface IExpensesCategorySchema {
   userId: string;
   category: string;
+  keywords: string[];
+}
+
+export interface IExpensesCategory {
+  category: string;
+  keywords: string[];
 }
 
 export interface IExpenseHistory {
@@ -52,6 +63,5 @@ export interface ProcessedExpense {
 
 export interface ProcessExpenseFileResponse {
   processedData: ProcessedExpense[];
-  categoriesData: string[];
   error?: { message: string };
 }

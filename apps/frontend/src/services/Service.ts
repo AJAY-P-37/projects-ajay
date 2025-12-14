@@ -1,55 +1,52 @@
 import axios from "axios";
-import { auth } from "./FirebaseService";
+import { AxiosError } from "axios";
+import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
+
 export const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL,
   withCredentials: true,
 });
 
-export const getFreshToken = async () => {
-  const user = auth.currentUser;
-  if (!user) return null;
-
-  // force refresh
-  return await user.getIdToken(true);
-};
-
-// let isRefreshing = false;
-// let pendingRequests: ((token: string) => void)[] = [];
-
 api.interceptors.response.use(
-  (response) => response,
-
-  async (error) => {
-    // If Axios couldn't even reach the server
-    if (!error.response) {
-      return Promise.reject(error);
-    }
-
-    const { status, data } = error.response;
-
-    const isExpired =
-      status === 401 &&
-      typeof data?.message === "string" &&
-      data.message.includes("id-token-expired");
-
-    if (isExpired) {
-      Toast.error("Session expired. Please login again.");
-      // ✅ You may also want to logout user here
-      // dispatch(logout());
-      return Promise.reject(error);
-    }
-
-    // ✅ Just pass all other errors up
+  (res) => res,
+  (error) => {
     return Promise.reject(error);
   },
 );
 
-// api.interceptors.request.use(async (config) => {
-//   const user = auth.currentUser;
-//   if (user) {
-//     const token = await user.getIdToken();
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
+export const isAuthError = (error: unknown) => {
+  if (!(error instanceof AxiosError)) return false;
+
+  const { status, data } = error.response || {};
+
+  return (
+    status === 401 &&
+    typeof data?.message === "string" &&
+    data.error.toLowerCase().includes("unauthorized")
+  );
+};
+
+export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      // ⚠️ do not invalidate auth query itself
+      if (isAuthError(error) && query.queryKey[0] !== "auth") {
+        Toast.error("Session expired. Please log in again.");
+        queryClient.invalidateQueries({
+          queryKey: ["auth", "isAuthenticated"],
+        });
+      }
+    },
+  }),
+
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (isAuthError(error)) {
+        queryClient.invalidateQueries({
+          queryKey: ["auth", "isAuthenticated"],
+        });
+      }
+    },
+  }),
+});

@@ -30,6 +30,8 @@ interface FormSelectProps<T extends FieldValues> {
   required?: boolean;
   /** Additional classes */
   className?: string;
+  /** custom onchange method for parent */
+  onChange?: (value: string) => void;
 }
 
 /**
@@ -43,6 +45,7 @@ export const FormSelect = <T extends FieldValues>({
   options,
   required,
   className,
+  onChange,
 }: FormSelectProps<T>) => {
   return (
     <Controller
@@ -57,10 +60,16 @@ export const FormSelect = <T extends FieldValues>({
             </Label>
           )}
 
-          <Select value={field.value} onValueChange={field.onChange}>
+          <Select
+            value={field.value}
+            onValueChange={(value: string) => {
+              field.onChange(value);
+              onChange?.(value);
+            }}
+          >
             <SelectTrigger
               className={cn(
-                "w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
                 fieldState.error && "border-red-500 focus:ring-red-500",
               )}
             >

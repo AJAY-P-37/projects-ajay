@@ -4,6 +4,7 @@ import { expenseColumns, makeExpenseRowSchema } from "./Columns";
 import { UseFormReturn } from "react-hook-form";
 import {
   EStatementType,
+  IExpensesCategory,
   ProcessExpenseFileResponse,
   ProcessedExpense,
 } from "common-types/types/expenses";
@@ -13,7 +14,7 @@ import ExpensesService from "@/services/ExpensesService";
 
 export type ExpensesTableProps = {
   rows: ProcessExpenseFileResponse["processedData"];
-  categories: ProcessExpenseFileResponse["categoriesData"];
+  categories: IExpensesCategory["category"][];
   expensesForm: UseFormReturn<ExpensesFormData>;
   setExpenseData: (data: ProcessExpenseFileResponse["processedData"]) => void;
   setMonthlyPivotData: (data: ProcessExpenseFileResponse["processedData"]) => void;

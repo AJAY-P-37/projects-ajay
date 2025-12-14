@@ -1,13 +1,13 @@
 import Joi from "joi";
 import { Model, Schema, Document, Connection } from "mongoose";
 import { MongoDB } from "../../mongo/mongoose";
-import { IExpenseCategory } from "common-types/dist/types/expenses";
+import { IExpensesCategorySchema } from "common-types/dist/types/expenses";
 
 /** ============================
  *  CATEGORY INTERFACES
  *  ============================ */
 
-export interface ICategoryDocument extends IExpenseCategory, Document {}
+export interface ICategoryDocument extends IExpensesCategorySchema, Document {}
 
 /** ============================
  *  SCHEMA DEFINITION
@@ -16,6 +16,7 @@ const categorySchema = new Schema<ICategoryDocument>(
   {
     userId: { type: String, required: true },
     category: { type: String, required: true },
+    keywords: { type: [String], required: true },
   },
   { collection: "categories_new", timestamps: true },
 );
@@ -33,10 +34,11 @@ export const getCategoryModel = async (): Promise<Model<ICategoryDocument>> => {
 /** ============================
  *  JOI VALIDATION
  *  ============================ */
-export const validateCategory = (data: Partial<IExpenseCategory>) => {
+export const validateCategory = (data: Partial<IExpensesCategorySchema>) => {
   const schema = Joi.object({
     userId: Joi.string().required().label("User ID"),
     category: Joi.string().required().label("Category"),
+    keywords: Joi.array(),
   });
 
   return schema.validate(data);

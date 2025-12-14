@@ -1,4 +1,4 @@
-import React, { JSX, RefObject, useState } from "react";
+import React, { JSX, RefObject, useRef, useState } from "react";
 import { Button } from "shadcn-lib/dist/components/ui/button";
 import { TableCell } from "shadcn-lib/dist/components/ui/table";
 import {
@@ -11,15 +11,23 @@ import {
   SaveIcon,
   StoreIcon,
   TrashIcon,
+  Upload,
 } from "lucide-react";
 import { BaseRow, TableErrors } from "./DataTable";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
-import { collectAllErrors, getAccessorKey, validateAll, validateRow } from "./TableUtils";
+import {
+  collectAllErrors,
+  getAccessorKey,
+  parseExcel,
+  validateAll,
+  validateRow,
+} from "./TableUtils";
 import { ZodSchema } from "zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { useDispatch } from "react-redux";
 import { setTable } from "@/store/slices/tableSlice";
 import { usePromise } from "@/hooks/promiseHooks";
+import { IExpensesCategory } from "common-types/types/expenses";
 
 const size = "sm";
 const variant = "default";
@@ -30,6 +38,7 @@ export interface TableActions<TData> {
   deleteRow?: boolean;
   copyTableToClipboard?: boolean;
   temporarySave?: boolean;
+  importRows?: (data: TData[]) => TData[];
   saveTable?: (data: TData[]) => Promise<any>;
 }
 interface ActionsColumnProps<TData extends BaseRow<TData>> {
@@ -157,6 +166,8 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
   const { run, ...state } = usePromise();
   const saveState = { ...state };
 
+  const inputRef = useRef(null);
+
   enum ECopy {
     copy = "copy",
     copied = "copied",
@@ -231,7 +242,7 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
 
   const handleCopyToClipBoard = (e) => {
     e.preventDefault();
-    const copyText = [columns.map((column) => column.header).join("\t")];
+    const copyText = [columns.map((column) => getAccessorKey(column)).join("\t")];
     copyText.push(
       ...rows.map((row) => {
         return columns
@@ -249,16 +260,44 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
       setCopyState(ECopy.copy);
     }, 2000);
   };
+
+  const importRows = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files[0];
+    const data = await parseExcel(file);
+    const importRows = actions.importRows(data); // Imported rows transformation methods
+    setRows(importRows);
+    validateAll(importRows, tableSchema, setErrors);
+  };
+
   return actions.addRow ||
     actions.copyTableToClipboard ||
     actions.temporarySave ||
     actions.saveTable ? (
-    <div className='flex justify-between mx-3 mt-3'>
+    <div className='flex justify-between m-3'>
       <div className='flex gap-2'>
         {actions.addRow && (
           <Button onClick={handleAddRow} size={size} variant={variant}>
             <PlusCircleIcon />
             Add Row
+          </Button>
+        )}
+        {actions.importRows && (
+          <Button
+            type='button'
+            size={size}
+            variant={variant}
+            onClick={() => inputRef.current?.click()}
+            className='flex items-center gap-2'
+          >
+            <Upload className='w-4 h-4' />
+            Import
+            <input
+              ref={inputRef}
+              type='file'
+              className='hidden'
+              accept={`.${["xlsx", "csv"].join(",.")}`}
+              onChange={importRows}
+            />
           </Button>
         )}
         {actions.copyTableToClipboard &&

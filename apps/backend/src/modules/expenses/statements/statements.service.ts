@@ -3,6 +3,7 @@ import {
   EStatementType,
   IProcessExpenseFileRequest,
   ProcessedExpense,
+  StatementFileMetadata,
 } from "common-types/dist/types/expenses";
 
 import { BaseParser } from "./parsers/BaseParser";
@@ -13,10 +14,13 @@ import { FirebaseService } from "../../auth/firebase.service";
 import { getExpenseHistoryModel, IExpenseHistoryDocument } from "../expensesHistory.model";
 
 import { Model } from "mongoose";
+import { HDFCCreditParser } from "./parsers/HDFCCreditParser";
+import { getCategoryModel, ICategoryDocument } from "../expensesCategories.model";
 
 export class StatementParsingService {
   private firebaseService;
   private ExpensesHistoryModel!: Model<IExpenseHistoryDocument>;
+  private ExpensesCategoriesModel!: Model<ICategoryDocument>;
 
   constructor() {
     this.firebaseService = new FirebaseService();
@@ -34,7 +38,7 @@ export class StatementParsingService {
         return new HDFCParser();
 
       case EStatementType.hdfcCredit:
-        return new HDFCParser(); // later replace with HDFCCreditParser
+        return new HDFCCreditParser(); // later replace with HDFCCreditParser
     }
 
     throw new Error(`Unsupported statement type: ${type}`);
@@ -48,41 +52,63 @@ export class StatementParsingService {
   /* ------------------------------------------------------------
    * ✅ CATEGORY HELPERS
    * ------------------------------------------------------------ */
-  public mapCategoryWithComment(comment: string) {
-    const commentsMap: Record<string, string> = {
-      Breakfast: "Food",
-      Lunch: "Food",
-      Dinner: "Food",
-      Food: "Food",
-      Bike: "Bike",
-      Haircut: "Others",
-      Others: "Others",
-      Family: "Family",
-      Gym: "Gym",
-      Health: "Health",
-      Investment: "Investment",
-      Movie: "Movie",
-      Outing: "Outing",
-      Rent: "Rent",
-      Shopping: "Shopping",
-      Snacks: "Snacks",
-      Rapido: "Travel",
-      Train: "Travel",
-      Travel: "Travel",
-      Contribution: "Contribution",
-    };
+  public mapcategoryWithKeyword = async (comment: string, userId: string) => {
+    this.ExpensesCategoriesModel = await getCategoryModel();
 
-    for (const key of Object.keys(commentsMap)) {
-      if (key.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
-        return {
-          categoryWithComment: commentsMap[key],
-          categoryMatchedWithComment: true,
-        };
+    const categories = (await this.ExpensesCategoriesModel.find({ userId })).map((x) => ({
+      category: x.category,
+      keywords: x.keywords,
+    }));
+
+    const matchedKeywords: string[] = [];
+    for (const { category, keywords } of categories) {
+      for (const keyword of keywords) {
+        if (keyword.toLowerCase() === comment.toLowerCase()) {
+          return {
+            categoryWithKeyword: category,
+            categoryMatchedWithKeyword: true,
+          };
+        }
+        if (keyword.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
+          matchedKeywords.push(category);
+        }
       }
     }
 
-    return { categoryWithComment: null, categoryMatchedWithComment: false };
-  }
+    if (matchedKeywords.length > 0) {
+      return {
+        categoryWithKeyword: matchedKeywords.join(" / ").trim(),
+        categoryMatchedWithKeyword: true,
+      };
+    }
+
+    const matchedKeywordsWithComments: string[] = [];
+    const keywordsMap: Record<string, string> = {
+      Self: "Self Transfer",
+      Split: "Split",
+    };
+
+    for (const key of Object.keys(keywordsMap)) {
+      if (key.toLowerCase() === comment.toLowerCase()) {
+        return {
+          categoryWithKeyword: keywordsMap[key],
+          categoryMatchedWithKeyword: true,
+        };
+      }
+      if (key.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
+        matchedKeywordsWithComments.push(keywordsMap[key]);
+      }
+    }
+
+    if (matchedKeywordsWithComments.length > 0) {
+      return {
+        categoryWithKeyword: matchedKeywordsWithComments.join(" / ").trim(),
+        categoryMatchedWithKeyword: true,
+      };
+    }
+
+    return { categoryWithKeyword: null, categoryMatchedWithKeyword: false };
+  };
 
   private async mapCategoryWithStatementRecord(statementRecord: string, userId: string) {
     this.ExpensesHistoryModel = await getExpenseHistoryModel();
@@ -90,7 +116,7 @@ export class StatementParsingService {
     const history = await this.ExpensesHistoryModel.find({ userId, statementRecord });
 
     if (history.length === 0)
-      return { categoryWithStatementRecord: "", categoryMatchedWithStatementRecord: false };
+      return { categoryWithStatementRecord: "Unknown", categoryMatchedWithStatementRecord: false };
 
     return {
       categoryWithStatementRecord: history
@@ -106,18 +132,41 @@ export class StatementParsingService {
     statementRecord: string,
     userId: string,
   ): Promise<string> {
-    const { categoryWithComment, categoryMatchedWithComment } =
-      this.mapCategoryWithComment(comment);
+    const { categoryWithKeyword, categoryMatchedWithKeyword } = await this.mapcategoryWithKeyword(
+      comment,
+      userId,
+    );
 
-    if (categoryMatchedWithComment && categoryWithComment) return categoryWithComment;
+    if (categoryMatchedWithKeyword && categoryWithKeyword) return categoryWithKeyword;
 
     const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
       await this.mapCategoryWithStatementRecord(statementRecord, userId);
 
     if (categoryMatchedWithStatementRecord) return categoryWithStatementRecord;
 
-    return comment;
+    return "Unknown";
   }
+
+  private processStatementFile = async (
+    body: IProcessExpenseFileRequest,
+    statementFileMetadata: StatementFileMetadata,
+    statementType: EStatementType,
+  ) => {
+    const url = await this.firebaseService.getDownloadUrlFromFirebaseStorageBucket(
+      statementFileMetadata.fullPath,
+    );
+
+    const { data } = await axios.get<ArrayBuffer>(url, { responseType: "arraybuffer" });
+
+    const parsedRows = await this.parseStatement(statementType, data);
+
+    // await this.firebaseService.deleteFileFromStorage(statementFileMetadata.fullPath);
+
+    const targetMonth = Number(body.month); // 1–12
+    const targetYear = Number(body.year); // 2025
+
+    return { parsedRows, targetMonth, targetYear };
+  };
 
   /* ------------------------------------------------------------
    * ✅ SBI DEBIT PROCESSOR
@@ -126,51 +175,64 @@ export class StatementParsingService {
     body: IProcessExpenseFileRequest,
     userId: string,
   ): Promise<ProcessedExpense[]> => {
-    const url = await this.firebaseService.getDownloadUrlFromFirebaseStorageBucket(
-      body.statementFileMetadata.fullPath,
-    );
+    const processedData: ProcessedExpense[] = (
+      await Promise.all(
+        body.statementFilesMetadata.map(
+          async (statementFileMetadata): Promise<ProcessedExpense[]> => {
+            const fileData: ProcessedExpense[] = [];
+            const { parsedRows, targetMonth, targetYear } = await this.processStatementFile(
+              body,
+              statementFileMetadata,
+              EStatementType.sbiDebit,
+            );
+            for (const row of parsedRows) {
+              const { txnDate, description, debitAmount } = row;
 
-    const { data } = await axios.get<ArrayBuffer>(url, { responseType: "arraybuffer" });
+              if (!row || !txnDate || !debitAmount) continue;
 
-    const parsedRows = await this.parseStatement(EStatementType.sbiDebit, data);
-    const processedData: ProcessedExpense[] = [];
+              const d = new Date(txnDate);
+              if (d.getMonth() !== targetMonth || d.getFullYear() !== targetYear) {
+                continue;
+              }
 
-    for (const row of parsedRows) {
-      if (!row || !row.txnDate || !row.debitAmount) continue;
+              const parts = description.replace(/^-+|-+$/g, "").split("/");
 
-      const description = row.description;
-      const parts = description.split("/");
+              // ✅ Case 1: TO TRANSFER / ... / ... pattern
+              if (parts.length > 1 && parts[0].startsWith("TO")) {
+                const comment = parts.at(-1) || "";
+                const statementRecord = parts.slice(3).join("->");
+                const category = await this.mapCategory(comment, statementRecord, userId);
 
-      // ✅ Case 1: TO TRANSFER / ... / ... pattern
-      if (parts.length > 1 && parts[0].startsWith("TO")) {
-        const comment = parts.at(-1) || "";
-        const statementRecord = parts.slice(3).join("->");
-        const category = await this.mapCategory(comment, statementRecord, userId);
+                fileData.push({
+                  date: txnDate,
+                  category: category,
+                  amount: debitAmount,
+                  statementRecord: statementRecord,
+                  statementType: EStatementType.sbiDebit,
+                });
+              }
 
-        processedData.push({
-          date: row.txnDate,
-          category: category,
-          amount: row.debitAmount,
-          statementRecord: statementRecord,
-          statementType: EStatementType.sbiDebit,
-        });
-      }
+              // ✅ Case 2: Other transaction descriptions
+              else {
+                const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
+                  description,
+                  userId,
+                );
 
-      // ✅ Case 2: Other transaction descriptions
-      else {
-        const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
-          await this.mapCategoryWithStatementRecord(description, userId);
-
-        processedData.push({
-          date: row.txnDate,
-          category: categoryMatchedWithStatementRecord ? categoryWithStatementRecord : description,
-          amount: row.debitAmount,
-          statementRecord: description,
-          statementType: EStatementType.sbiDebit,
-        });
-      }
-    }
-
+                fileData.push({
+                  date: txnDate,
+                  category: categoryWithStatementRecord,
+                  amount: debitAmount,
+                  statementRecord: description,
+                  statementType: EStatementType.sbiDebit,
+                });
+              }
+            }
+            return fileData;
+          },
+        ),
+      )
+    ).flat();
     return processedData;
   };
 
@@ -181,58 +243,128 @@ export class StatementParsingService {
     body: IProcessExpenseFileRequest,
     userId: string,
   ): Promise<ProcessedExpense[]> => {
-    const url = await this.firebaseService.getDownloadUrlFromFirebaseStorageBucket(
-      body.statementFileMetadata.fullPath,
-    );
+    const processedData: ProcessedExpense[] = (
+      await Promise.all(
+        body.statementFilesMetadata.map(
+          async (statementFileMetadata): Promise<ProcessedExpense[]> => {
+            const fileData: ProcessedExpense[] = [];
+            const { parsedRows, targetMonth, targetYear } = await this.processStatementFile(
+              body,
+              statementFileMetadata,
+              EStatementType.hdfcDebit,
+            );
 
-    const { data } = await axios.get<ArrayBuffer>(url, { responseType: "arraybuffer" });
-    const rows = await this.parseStatement(EStatementType.hdfcDebit, data);
-    const processedData: ProcessedExpense[] = [];
+            for (const row of parsedRows) {
+              const { txnDate, description, debitAmount } = row;
+              if (!txnDate || !debitAmount) continue;
 
-    for (const row of rows) {
-      const { txnDate, description, debitAmount } = row;
-      if (!txnDate || !debitAmount) continue;
+              // ---------------------------------------------------------
+              // ✅ Month-Year Filter
+              // ---------------------------------------------------------
+              const d = new Date(txnDate);
+              if (d.getMonth() !== targetMonth || d.getFullYear() !== targetYear) {
+                continue;
+              }
 
-      //
-      const parts = description.split("-");
+              //
+              const parts = description.split("-");
 
-      // ✅ Case 1: below patterns match
-      // IMPS-506823333166-P AJAY-SBIN-XXXXXXX1725-MARCH EXPENSE
-      // UPI-MALARVIZHI B-MALARVIZHI2705@OKICICI-SBIN0010412-107228132454-HAIHELLO
-      if (parts.length > 1) {
-        const comment = parts.at(-1) || "";
-        const statementRecord = parts.join("->");
-        const category = await this.mapCategory(comment, statementRecord, userId);
+              // ✅ Case 1: below patterns match
+              // IMPS-506823333166-P AJAY-SBIN-XXXXXXX1725-MARCH EXPENSE
+              // UPI-MALARVIZHI B-MALARVIZHI2705@OKICICI-SBIN0010412-107228132454-HAIHELLO
+              if (parts.length > 1) {
+                const comment = parts.at(-1) || "";
+                parts.splice(parts.length - 2, 1); // Removing transaction ID from statement record
+                const statementRecord = parts.join("->");
+                const category = await this.mapCategory(comment, statementRecord, userId);
 
-        processedData.push({
-          date: row.txnDate,
-          category: category,
-          amount: row.debitAmount,
-          statementRecord: statementRecord,
-          statementType: EStatementType.hdfcDebit,
-        });
+                fileData.push({
+                  date: row.txnDate,
+                  category,
+                  amount: row.debitAmount,
+                  statementRecord: statementRecord,
+                  statementType: EStatementType.hdfcDebit,
+                });
 
-        // ✅ Case 2: Other transaction descriptions
-      } else {
-        const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
-          await this.mapCategoryWithStatementRecord(description, userId);
+                // ✅ Case 2: Other transaction descriptions
+              } else {
+                const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
+                  description,
+                  userId,
+                );
 
-        processedData.push({
-          date: row.txnDate,
-          category: categoryMatchedWithStatementRecord ? categoryWithStatementRecord : description,
-          amount: row.debitAmount,
-          statementRecord: description,
-          statementType: EStatementType.hdfcDebit,
-        });
-      }
-    }
+                fileData.push({
+                  date: row.txnDate,
+                  category: categoryWithStatementRecord,
+                  amount: row.debitAmount,
+                  statementRecord: description,
+                  statementType: EStatementType.hdfcDebit,
+                });
+              }
+            }
+            return fileData;
+          },
+        ),
+      )
+    ).flat();
     return processedData;
   };
 
   /* ------------------------------------------------------------
-   * ✅ HDFC CREDIT (Stub)
+   * ✅ HDFC CREDIT
    * ------------------------------------------------------------ */
-  //   public processHDFCCreditStatement = async (body: IProcessExpenseFileRequest) => {
-  //     throw new Error("HDFC Credit parser not implemented yet");
-  //   };
+  public processHDFCCreditStatement = async (
+    body: IProcessExpenseFileRequest,
+    userId: string,
+  ): Promise<ProcessedExpense[]> => {
+    const processedData: ProcessedExpense[] = (
+      await Promise.all(
+        body.statementFilesMetadata.map(
+          async (statementFileMetadata): Promise<ProcessedExpense[]> => {
+            const fileData: ProcessedExpense[] = [];
+
+            const { parsedRows, targetMonth, targetYear } = await this.processStatementFile(
+              body,
+              statementFileMetadata,
+              EStatementType.hdfcCredit,
+            );
+
+            for (const row of parsedRows) {
+              const { txnDate, description, debitAmount } = row;
+
+              if (!txnDate || !debitAmount) continue;
+
+              // ---------------------------------------------------------
+              // ✅ Month-Year Filter
+              // ---------------------------------------------------------
+              const d = new Date(txnDate);
+              if (d.getMonth() !== targetMonth || d.getFullYear() !== targetYear) {
+                continue;
+              }
+
+              // ---------------------------------------------------------
+              // ✅ Case 1: Fallback classification via full text match
+              // ---------------------------------------------------------
+
+              const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
+                description,
+                userId,
+              );
+
+              fileData.push({
+                date: txnDate,
+                category: categoryWithStatementRecord,
+                amount: debitAmount,
+                statementRecord: description,
+                statementType: EStatementType.hdfcCredit,
+              });
+            }
+            return fileData;
+          },
+        ),
+      )
+    ).flat();
+
+    return processedData;
+  };
 }

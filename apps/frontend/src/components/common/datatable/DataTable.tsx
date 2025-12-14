@@ -153,8 +153,8 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
   console.log(errors);
 
   return (
-    <div className='px-0 '>
-      <div className='w-full overflow-x-auto scrollbar-thin h-[500px]'>
+    <div className='px-0 flex flex-col border border-secondary-foreground rounded'>
+      <div className='w-full overflow-x-auto scrollbar-thin rounded h-[500px]'>
         <Table noWrapper className='min-w-max border-separate border-spacing-0'>
           <TableHeader className='sticky z-10 top-0 bg-muted'>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -220,8 +220,11 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
-                  No results.
+                <TableCell
+                  colSpan={columns.length + (actions.editRow || actions.deleteRow ? 1 : 0)}
+                  className='h-24 text-center'
+                >
+                  No records.
                 </TableCell>
               </TableRow>
             )}

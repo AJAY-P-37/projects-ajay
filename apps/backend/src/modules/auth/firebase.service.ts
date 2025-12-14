@@ -20,6 +20,9 @@ const serviceAccount = {
   client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
   universe_domain: process.env.UNIVERSE_DOMAIN,
 };
+
+export const expiresIn = 1000 * 60 * 5; //* 24 * 1; // 1 day(s)
+
 @Injectable()
 export class FirebaseService implements OnModuleInit {
   // private readonly jwtSecret = process.env.JWT_SECRET || "supersecret";
@@ -44,14 +47,22 @@ export class FirebaseService implements OnModuleInit {
     const file = storageBucket.file(filePath);
     const [url] = await file.getSignedUrl({
       action: "read",
-      expires: "03-09-2030",
+      expires: "03-09-2130",
     });
     return url;
   };
 
-  authenticateUserFromFirebase = async (idToken: string): Promise<IUser | null> => {
-    const decoded: DecodedIdToken = await this.verifyToken(idToken);
+  deleteFileFromStorage = async (filePath: string) => {
+    try {
+      const storageBucket: Bucket = this.getFirebaseStorage();
+      await storageBucket.file(filePath).delete();
+      console.log("File deleted:", filePath);
+    } catch (err) {
+      console.error("Error deleting file:", err);
+    }
+  };
 
+  authenticateUserFromFirebase = async (decoded: DecodedIdToken): Promise<IUser | null> => {
     let user = await this.usersService.findUserByUid(decoded.uid);
     // await admin.auth().revokeRefreshTokens(decoded.uid);
 
@@ -81,7 +92,7 @@ export class FirebaseService implements OnModuleInit {
     // );
   };
 
-  async verifyToken(token: string) {
+  async verifyIdToken(token: string) {
     try {
       return await admin.auth().verifyIdToken(token);
     } catch (err: any) {
@@ -90,6 +101,23 @@ export class FirebaseService implements OnModuleInit {
       }
 
       throw new UnauthorizedException(err.message || "Invalid token");
+    }
+  }
+
+  /** 🔹 Create SESSION COOKIE */
+  async createSessionCookie(idToken: string) {
+    return await admin.auth().createSessionCookie(idToken, { expiresIn });
+  }
+
+  /** 🔹 Verify SESSION COOKIE (for every authenticated request) */
+  async verifySessionCookie(sessionCookie: string) {
+    try {
+      return await admin.auth().verifySessionCookie(sessionCookie, true);
+    } catch (err: any) {
+      if (err?.code === "auth/session-cookie-expired") {
+        throw new UnauthorizedException("id-token-expired");
+      }
+      throw new UnauthorizedException(err.message || "Invalid session");
     }
   }
 }

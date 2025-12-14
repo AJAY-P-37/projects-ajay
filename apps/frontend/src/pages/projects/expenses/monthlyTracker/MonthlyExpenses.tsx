@@ -1,8 +1,8 @@
 import { ExpensesForm } from "./MonthyExpensesForm";
 import { MultiStepForm } from "@/components/common/storybook/multiStepForm";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { ExpensesTable } from "./ProcessExpenseTable/Table";
-import { ProcessExpenseFileResponse } from "common-types/types/expenses";
+import { IExpensesCategory } from "common-types/types/expenses";
 import { useForm, UseFormReturn } from "react-hook-form";
 import {
   currentMonth,
@@ -14,6 +14,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { ExpensesVisual } from "./MonthlyExpenseVisuals/Table";
+import ExpensesService from "@/services/ExpensesService";
+import { useQuery } from "@tanstack/react-query";
 
 export const Expenses = () => {
   const [currentStep, setCurrentStep] = useState("step1");
@@ -30,11 +32,17 @@ export const Expenses = () => {
     expenseTable = tables["expenses-table"].data;
   }
 
-  const { categories, formValues } = useSelector((state: RootState) => state.expenses);
+  const { formValues } = useSelector((state: RootState) => state.expenses);
 
-  const [expenseData, setExpenseData] = useState<ProcessExpenseFileResponse | null>({
+  const { data: categories }: { data: IExpensesCategory[] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new ExpensesService().getCategories(),
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  const [expenseData, setExpenseData] = useState({
     processedData: expenseTable,
-    categoriesData: categories,
   });
 
   const [monthlyPivotData, setMonthlyPivotData] = useState(null);
@@ -84,7 +92,7 @@ export const Expenses = () => {
         component: expenseData.processedData ? (
           <ExpensesTable
             rows={expenseData.processedData}
-            categories={expenseData.categoriesData}
+            categories={categories.map((c) => c.category)}
             expensesForm={expensesFormHook}
             setExpenseData={(data) => {
               setExpenseData((prev) => ({ ...prev, processedData: data }));
@@ -108,7 +116,7 @@ export const Expenses = () => {
         component: monthlyPivotData ? (
           <ExpensesVisual
             rows={monthlyPivotData}
-            categories={expenseData.categoriesData}
+            categories={categories.map((c) => c.category)}
             expensesForm={expensesFormHook}
           />
         ) : (

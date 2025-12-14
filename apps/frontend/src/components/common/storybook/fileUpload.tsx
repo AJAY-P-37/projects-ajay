@@ -48,7 +48,7 @@ export const FormFileUpload = <T extends FieldValues>({
       render={({ field, fieldState }) => {
         const value = field.value;
         const files: File[] = allowMultiple
-          ? (value as File[] | undefined) || []
+          ? (value as File[]) || []
           : value
             ? [value as File]
             : [];
@@ -113,6 +113,7 @@ export const FormFileUpload = <T extends FieldValues>({
               type='file'
               className='hidden'
               multiple={allowMultiple}
+              accept={`.${allowedFileTypes.join(",.")}`}
               onChange={handleChange}
             />
 

@@ -1,5 +1,4 @@
-import { useReducer } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 
 import { Button } from "shadcn-lib/dist/components/ui/button";
 import { Card } from "shadcn-lib/dist/components/ui/card";
@@ -12,17 +11,10 @@ import ExpensesService from "@/services/ExpensesService";
 import { statementDocumentOptions } from "common-types/types/expenses";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
 import { LoaderCircle, CloudUpload } from "lucide-react";
-import {
-  currentMonth,
-  currentYear,
-  ExpensesFormData,
-  expensesSchema,
-  months,
-  years,
-} from "./MonthlyExpensesFormSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { setCategories, setMonthlyExpensesForm } from "@/store/slices/expensesSlice";
+import { ExpensesFormData, months, years } from "./MonthlyExpensesFormSchema";
+import { setCategories } from "@/store/slices/expensesSlice";
 import { usePromise } from "@/hooks/promiseHooks";
+import { useState } from "react";
 
 // ---------------- COMPONENT ----------------
 export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
@@ -36,23 +28,25 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
     name: "statements",
   });
 
-  const selectedTypes = watch("statements")?.map((s) => s.type);
+  const supportedStatements = statementDocumentOptions.slice(0, 3);
+  const [selectedTypes, setSelectTypes] = useState(watch("statements")?.map((s) => s.type));
 
   const { user } = useSelector((state: RootState) => state.auth);
 
   const onSubmit = async (formData: ExpensesFormData) => {
     const f = async () => {
-      let response = { categoriesData: [], processedData: [] };
+      let response = { processedData: [] };
 
       const expensesService = new ExpensesService();
-
       await Promise.all(
         formData.statements.map(async (statement) => {
+          let uploadedFileMeta;
           try {
             // Upload
-            const uploadedFileMeta = await FirebaseService.uploadFilesToFirebase(
+            uploadedFileMeta = await FirebaseService.uploadFilesToFirebase(
               statement.file,
               `expenses/${user?.email}/statements`,
+              // `${statement.type} card statement`,
             );
 
             // Parse statement
@@ -60,21 +54,22 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
               month: parseInt(formData.month),
               year: parseInt(formData.year),
               statementType: statement.type,
-              statementFileMetadata: uploadedFileMeta[0],
+              statementFilesMetadata: uploadedFileMeta,
             });
 
-            if (!data.processedData || !data.categoriesData) return;
+            if (!data.processedData) return;
             // Merge processed data
             response.processedData.push(...data.processedData);
-
-            // Categories same for all statements
-            if (response.categoriesData.length === 0) {
-              response.categoriesData = data.categoriesData;
-              reduxDispatch(setCategories(data.categoriesData));
-              // reduxDispatch(setMonthlyExpensesForm(formData));
-            }
           } catch (err: any) {
             Toast.error(err.message || "Error processing statement(s)");
+          } finally {
+            if (uploadedFileMeta) {
+              await Promise.all(
+                uploadedFileMeta.map(async (file) => {
+                  await FirebaseService.deleteFileFromStorage(file.fullPath);
+                }),
+              );
+            }
           }
         }),
       );
@@ -83,6 +78,7 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
 
     run(f);
   };
+  console.log(selectedTypes);
 
   return (
     <Card className='p-6 max-w-lg mx-auto space-y-6 rounded-2xl shadow-md bg-card'>
@@ -97,7 +93,7 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
         {/* Dynamic Statement Uploads */}
         <div className='space-y-4'>
           {fields.map((field, index) => {
-            const availableOptions = statementDocumentOptions.filter(
+            const availableOptions = supportedStatements.filter(
               (opt) =>
                 !selectedTypes.includes(opt.value) ||
                 opt.value === watch(`statements.${index}.type`),
@@ -114,7 +110,12 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
                       type='button'
                       variant='ghost'
                       size='sm'
-                      onClick={() => remove(index)}
+                      onClick={() => {
+                        remove(index);
+                        setSelectTypes((prev: string[]) =>
+                          prev.filter((x) => x !== selectedTypes[index]),
+                        );
+                      }}
                       className='text-red-500'
                     >
                       ✕
@@ -128,13 +129,21 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
                   control={control}
                   label='Statement Type'
                   required
+                  onChange={(value: string) =>
+                    setSelectTypes((prev) => {
+                      const x = [...prev];
+                      x[index] = value;
+                      return x;
+                    })
+                  }
                 />
 
                 <FormFileUpload
                   control={control}
                   name={`statements.${index}.file`}
-                  label='Upload File'
-                  allowedFileTypes={["xlsx", "xls", "csv"]}
+                  label='Upload File(s)'
+                  allowedFileTypes={["xlsx", "xls"]}
+                  allowMultiple={true}
                   required
                 />
               </div>
@@ -145,7 +154,8 @@ export const ExpensesForm = ({ expensesFormHook, setExpenseData }) => {
             type='button'
             variant='outline'
             className='w-full border-dashed'
-            onClick={() => append({ type: "", file: undefined as unknown as File })}
+            onClick={() => append({ type: "", file: [] })}
+            disabled={fields.length >= supportedStatements.length}
           >
             + Add another statement
           </Button>

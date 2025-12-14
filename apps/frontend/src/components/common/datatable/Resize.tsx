@@ -5,13 +5,13 @@ import { getAccessorKey } from "./TableUtils";
 export const ResizeHandle = ({ onMouseDown }) => (
   <div
     onMouseDown={onMouseDown}
-    className='absolute top-0 right-0 h-full w-[3px] cursor-col-resize bg-card hover:bg-gray-400/50'
+    className='absolute top-0 right-0 h-full w-[3px] cursor-col-resize bg-card hover:bg-cyan-500'
   />
 );
 
 export const ResizeIndicator = ({ x }: { x: number }) => (
   <div
-    className='fixed top-0 bottom-0 w-[2px] bg-blue-500 pointer-events-none transition-all duration-75'
+    className='fixed top-0 bottom-0 w-[2px] bg-cyan-500 pointer-events-none transition-all duration-75'
     style={{ left: x }}
   />
 );

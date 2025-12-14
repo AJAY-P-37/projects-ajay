@@ -11,9 +11,10 @@ import { Popover, PopoverTrigger, PopoverContent } from "shadcn-lib/dist/compone
 import { Calendar } from "shadcn-lib/dist/components/ui/calendar";
 import { ErrorPopover } from "./ErrorPopover";
 import { TriangleAlert } from "lucide-react";
+import { TagEditor } from "../storybook/tagEditor";
 // import { useState } from "react";
 
-type UIType = "input" | "number" | "select" | "date" | "text";
+export type UIType = "input" | "number" | "select" | "date" | "text" | "tagEditor";
 
 interface EditableCellProps {
   row: any;
@@ -58,12 +59,12 @@ export const EditableCell = ({
     Cell = (
       <div
         className={cn(
-          "flex items-center justify-center px-2 py-1 rounded w-full h-full ",
+          "flex items-center justify-start px-2 py-1 rounded w-full h-full truncate",
           width,
           error && "border border-input",
         )}
       >
-        {value === "" ? "\u00A0 " : renderView ? renderView(value) : value}
+        {value === "" ? "\u00A0" : renderView ? renderView(value) : value}
       </div>
     );
   } else {
@@ -101,7 +102,6 @@ export const getCellType = (
   options: { label: string; value: string }[] | string[],
   placeholder?: string,
 ) => {
-  console.log(ui, value);
   switch (ui) {
     case "input":
       return (
@@ -130,7 +130,7 @@ export const getCellType = (
           <SelectTrigger className={cn("w-full", width, error && errorClassName)}>
             <SelectValue placeholder={placeholder || "Select"} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className='max-h-72'>
             {options.map((o: any) =>
               typeof o === "string" ? (
                 <SelectItem key={o} value={o}>
@@ -191,6 +191,15 @@ export const getCellType = (
           value={value || ""}
           onChange={(e) => update(e.target.value)}
           className={cn("border rounded p-2", width, error && errorClassName)}
+        />
+      );
+
+    case "tagEditor":
+      return (
+        <TagEditor
+          tags={value}
+          onAdd={(tags: string[]) => update(tags)}
+          onRemove={(tags: string[]) => update(tags)}
         />
       );
 

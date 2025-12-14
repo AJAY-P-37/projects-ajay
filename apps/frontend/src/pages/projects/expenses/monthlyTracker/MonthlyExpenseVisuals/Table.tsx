@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../../../../../components/common/datatable/DataTable";
 import { expenseColumns, makeExpenseRowSchema } from "./Columns";
 import { UseFormReturn } from "react-hook-form";
-import { ProcessExpenseFileResponse } from "common-types/types/expenses";
+import { IExpensesCategory, ProcessExpenseFileResponse } from "common-types/types/expenses";
 import { ExpensesFormData } from "../MonthlyExpensesFormSchema";
 import { ZodObject } from "zod";
 import ExpensesService from "@/services/ExpensesService";
@@ -10,7 +10,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "shadcn-lib/dist/co
 
 export type ExpensesTableProps = {
   rows: ProcessExpenseFileResponse["processedData"];
-  categories: ProcessExpenseFileResponse["categoriesData"];
+  categories: IExpensesCategory["category"][];
   expensesForm: UseFormReturn<ExpensesFormData>;
 };
 

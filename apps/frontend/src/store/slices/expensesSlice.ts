@@ -9,7 +9,7 @@ export interface ExpensesState {
   formValues: {
     month: string;
     year: string;
-    statements: Array<{ type: string; file: File }>;
+    statements: Array<{ type: string; file: File[] | [] }>;
   };
   categories: any[];
 }
@@ -18,7 +18,7 @@ const initialState: ExpensesState = {
   formValues: {
     month: currentMonth,
     year: currentYear,
-    statements: [{ type: "", file: undefined as unknown as File }],
+    statements: [{ type: "", file: [] }],
   },
   categories: [],
 };
@@ -35,12 +35,12 @@ const expensesSlice = createSlice({
       action: PayloadAction<{
         month: string;
         year: string;
-        statements: Array<{ type: string; file: File }>;
+        statements: Array<{ type: string; file: File[] }>;
       }>,
     ) {
       const { month, year, statements } = action.payload;
       const s = statements.map((s) => {
-        return { ...s, file: URL.createObjectURL(s.file) as unknown as File };
+        return { ...s, file: URL.createObjectURL(s.file[0]) as unknown as File[] };
       });
       state.formValues = { month, year, statements: s };
     },

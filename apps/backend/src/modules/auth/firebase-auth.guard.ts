@@ -3,15 +3,18 @@ import { FirebaseService } from "./firebase.service";
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(private readonly authService: FirebaseService) {}
+  constructor(private firebase: FirebaseService) {}
 
   async use(req: any, res: any, next: () => void) {
-    const token = req.cookies?.token;
-    if (!token) throw new UnauthorizedException("No token provided");
+    const sessionCookie = req.cookies?.session;
+
+    if (!sessionCookie) {
+      throw new UnauthorizedException("No session cookie provided");
+    }
 
     try {
-      const decoded = await this.authService.verifyToken(token);
-      req.user = decoded; // attach user to request
+      const decoded = await this.firebase.verifySessionCookie(sessionCookie);
+      req.user = decoded;
       next();
     } catch (err) {
       throw err;

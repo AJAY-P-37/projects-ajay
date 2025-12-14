@@ -4,12 +4,13 @@ import { getExpenseHistoryModel, IExpenseHistoryDocument } from "./expensesHisto
 import { Model } from "mongoose";
 import {
   EStatementType,
+  IExpensesCategory,
   IProcessExpenseFileRequest,
   ProcessedExpense,
   ProcessExpenseFileResponse,
 } from "common-types/dist/types/expenses";
 import { StatementParsingService } from "./statements/statements.service";
-import { ICategoryDocument, getCategoryModel } from "./expensesCategories.model";
+import { ICategoryDocument, getCategoryModel, validateCategory } from "./expensesCategories.model";
 
 @Injectable()
 export class ExpensesService implements OnModuleInit {
@@ -22,9 +23,8 @@ export class ExpensesService implements OnModuleInit {
   async onModuleInit() {
     this.ExpensesModel = await getExpenseModel();
     this.ExpensesHistoryModel = await getExpenseHistoryModel();
-    this.statementService = new StatementParsingService();
-
     this.CategoriesModel = await getCategoryModel();
+    this.statementService = new StatementParsingService();
   }
 
   /** ---------------------------------------------------
@@ -36,37 +36,32 @@ export class ExpensesService implements OnModuleInit {
   ): Promise<ProcessExpenseFileResponse> {
     try {
       let processedData: ProcessedExpense[] = [];
-      const categoriesData = (await this.CategoriesModel.find({ userId }))
-        .map((c) => c.category)
-        .sort();
 
       switch (body.statementType) {
         case EStatementType.sbiDebit:
           processedData = await this.statementService.processSBIDebitStatement(body, userId);
           return {
             processedData,
-            categoriesData: categoriesData,
           };
         case EStatementType.hdfcDebit:
           processedData = await this.statementService.processHDFCDebitStatement(body, userId);
           return {
             processedData,
-            categoriesData: categoriesData,
           };
-        // case EStatementType.hdfcCredit:
-        //   processedData = await this.statementService.processHDFCCreditStatement(body);
-
+        case EStatementType.hdfcCredit:
+          processedData = await this.statementService.processHDFCCreditStatement(body, userId);
+          return {
+            processedData,
+          };
         default:
           return {
             processedData: [],
-            categoriesData: [],
             error: { message: "Unsupported Bank Statement" },
           };
       }
     } catch (e: any) {
       return {
         processedData: [],
-        categoriesData: [],
         error: { message: e.message },
       };
     }
@@ -103,11 +98,9 @@ export class ExpensesService implements OnModuleInit {
 
     const consolidatedData: Record<string, number> = {};
 
-    const categoriesData = (await this.CategoriesModel.find({ userId }))
-      .map((c) => c.category)
-      .sort();
+    const categories = (await this.CategoriesModel.find({ userId })).map((c) => c.category).sort();
 
-    categoriesData.forEach((cat) => (consolidatedData[cat] = 0));
+    categories.forEach((cat) => (consolidatedData[cat] = 0));
 
     // Aggregate expenses
     monthlyExpenses.forEach(({ category, amount }) => {
@@ -119,7 +112,7 @@ export class ExpensesService implements OnModuleInit {
     const finalData: ProcessedExpense[] = [];
     let total = 0;
 
-    categoriesData.forEach((category) => {
+    categories.forEach((category) => {
       finalData.push({
         category: category,
         amount: consolidatedData[category],
@@ -197,7 +190,170 @@ export class ExpensesService implements OnModuleInit {
   /** ---------------------------------------------------
    * 🔹 FETCH EXPENSE HISTORY
    * --------------------------------------------------- */
-  async getExpenseHistoryData() {
-    return await this.ExpensesHistoryModel.find();
+  async getExpenseHistoryData(userId: string) {
+    return await this.ExpensesHistoryModel.find({ userId });
+  }
+
+  async getCategories(userId: string): Promise<IExpensesCategory[]> {
+    const categories: IExpensesCategory[] = (await this.CategoriesModel.find({ userId }))
+      .map((c) => ({ category: c.category, keywords: c.keywords }))
+      .sort();
+    return categories;
+  }
+
+  async saveCategories(body: any, userId: string) {
+    try {
+      await this.CategoriesModel.deleteMany({ userId });
+      await Promise.all(
+        body.categories.map(async (eachCategory: any, index: number) => {
+          const { category, keywords } = eachCategory;
+
+          const { error } = validateCategory({
+            userId,
+            category,
+            keywords,
+          });
+          if (error) {
+            throw new Error(`Invalid data in row ${index}: ${error.details[0].message}`);
+          }
+          await this.CategoriesModel.create({
+            category,
+            keywords,
+            userId,
+          });
+        }),
+      );
+      return { message: "Saved your Categories data" };
+    } catch (error: any) {
+      return { error: `Error saving categories: ${error?.message}` };
+    }
+  }
+  async getYearlyConsolidatedPivotTable(
+    year: number,
+    userId: string,
+  ): Promise<{ category: string; amount: number }[]> {
+    const round = (v: number) =>
+      Math.round((parseFloat(v.toString()) + Number.EPSILON) * 100) / 100;
+
+    // Get date range for entire year
+    const start = new Date(year, 0, 1); // Jan 1
+    const end = new Date(year, 11, 31, 23, 59); // Dec 31 (end of day)
+
+    // Fetch all expenses for year
+    const expenses = await this.ExpensesModel.find({
+      userId,
+      date: { $gte: start, $lte: end },
+    });
+
+    // Fetch all categories
+    const categories = (await this.CategoriesModel.find({ userId })).map((c) => c.category).sort();
+
+    // Prepare consolidation store
+    const consolidated: Record<string, number> = {};
+    categories.forEach((c) => (consolidated[c] = 0));
+
+    // Aggregate sums
+    expenses.forEach(({ category, amount }) => {
+      const val = round(Number(amount));
+      consolidated[category] = round((consolidated[category] || 0) + val);
+    });
+
+    // Prepare final list
+    const final: { category: string; amount: number }[] = [];
+    let total = 0;
+
+    for (const cat of categories) {
+      final.push({
+        category: cat,
+        amount: consolidated[cat],
+      });
+      total += consolidated[cat];
+    }
+
+    final.push({
+      category: "Total",
+      amount: round(total),
+    });
+
+    return final;
+  }
+
+  async getMonthlyConsolidatedPivotTable(year: number, userId: string) {
+    const roundOff = (val: number): number =>
+      Math.round((parseFloat(val.toString()) + Number.EPSILON) * 100) / 100;
+
+    // Get all expenses for this user in the given year
+    const yearlyExpenses = await this.ExpensesModel.find({
+      userId,
+      date: {
+        $gte: new Date(year, 0, 1),
+        $lte: new Date(year, 11, 31, 23, 59, 59),
+      },
+    });
+
+    // Get all categories
+    const categories = (await this.CategoriesModel.find({ userId })).map((c) => c.category).sort();
+
+    // Prepare output structure
+    // For each month → map category → amount
+    const monthlyData: Record<string, Record<string, number>> = {};
+
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date(2024, i, 1);
+      return date.toLocaleString("default", { month: "long" });
+    });
+
+    for (const month of months) {
+      monthlyData[month] = {};
+      categories.forEach((cat) => (monthlyData[month][cat] = 0));
+    }
+
+    // Aggregate expenses
+    yearlyExpenses.forEach((exp) => {
+      const month = months[exp.date.getMonth()];
+      const cat = exp.category;
+      const amt = roundOff(Number(exp.amount));
+
+      // Ensure it's a known category
+      if (monthlyData[month][cat] !== undefined) {
+        monthlyData[month][cat] = roundOff(monthlyData[month][cat] + amt);
+      }
+    });
+
+    // Prepare final result
+    const result = [];
+
+    for (const month of months) {
+      const monthEntry = [];
+
+      let total = 0;
+
+      categories.forEach((cat) => {
+        const amount = monthlyData[month][cat];
+        total += amount;
+
+        monthEntry.push({
+          category: cat,
+          amount,
+        });
+      });
+
+      // Add monthly total
+      monthEntry.push({
+        category: "Total",
+        amount: roundOff(total),
+      });
+
+      result.push({
+        month: month,
+        data: monthEntry,
+      });
+    }
+
+    return {
+      year,
+      categories,
+      months: result,
+    };
   }
 }

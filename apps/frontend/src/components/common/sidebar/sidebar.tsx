@@ -5,12 +5,16 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  CalendarArrowUp,
+  ChartBarStacked,
   Command,
   Frame,
   GalleryVerticalEnd,
+  IndianRupee,
   Map,
   PieChart,
   Settings2,
+  Split,
   SquareTerminal,
 } from "lucide-react";
 
@@ -43,95 +47,98 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Expense Management",
       url: "#",
-      icon: SquareTerminal,
-      isActive: true,
+      icon: IndianRupee,
+      isActive: false,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Monthly tracker",
+          url: "/projects/expenses/monthlyTracker",
+          icon: CalendarArrowUp,
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Add categories",
+          url: "/projects/expenses/addCategories",
+          icon: Split,
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Visualize expenses",
+          url: "/projects/expenses/visualize",
+          icon: ChartBarStacked,
         },
       ],
     },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "Models",
+    //   url: "#",
+    //   icon: Bot,
+    //   items: [
+    //     {
+    //       title: "Genesis",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Explorer",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Quantum",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Documentation",
+    //   url: "#",
+    //   icon: BookOpen,
+    //   items: [
+    //     {
+    //       title: "Introduction",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Get Started",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Tutorials",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Changelog",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Settings",
+    //   url: "#",
+    //   icon: Settings2,
+    //   items: [
+    //     {
+    //       title: "General",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Team",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Billing",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Limits",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
   ],
   projects: [
     {
       name: "Expense Management",
-      url: "/projects/expenses",
+      url: "/projects/expenses/monthlyTracker",
       icon: Frame,
     },
   ],
@@ -146,13 +153,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} />
         <SidebarGroup>
           <SidebarGroupLabel>Mode</SidebarGroupLabel>
           <SidebarMenu>
             <Mode />
           </SidebarMenu>
-        </SidebarGroup>
+        </SidebarGroup> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser

@@ -15,7 +15,7 @@ export const AppMainSidebar = ({ children }: { children: React.ReactNode }) => {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className='bg-card relative overflow-hidden max-w-full max-h-[100vh]'>
-          <SidebarTrigger className='sticky top-2 z-50' />
+          <SidebarTrigger className='text-accent-foreground sticky top-2 left-2 z-50' />
           <div className='overflow-auto'>{children}</div>
         </SidebarInset>
       </SidebarProvider>

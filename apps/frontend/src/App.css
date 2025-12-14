@@ -36,6 +36,8 @@
     --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
     --sidebar-border: oklch(0.929 0.013 255.508);
     --sidebar-ring: oklch(0.704 0.04 256.788);
+    --chart-axis: rgba(0, 0, 0, 0.4);
+    --chart-grid: rgba(0, 0, 0, 0.1);
   }
 
   .dark {
@@ -70,5 +72,7 @@
     --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.551 0.027 264.364);
+    --chart-axis: rgba(255, 255, 255, 0.35);
+    --chart-grid: rgba(255, 255, 255, 0.08);
   }
 }
