@@ -4,7 +4,7 @@ import {
   IProcessExpenseFileRequest,
   ProcessedExpense,
   StatementFileMetadata,
-} from "common-types/dist/types/expenses";
+} from "../../../common-types/types/expenses";
 
 import { BaseParser } from "./parsers/BaseParser";
 import { SBIParser } from "./parsers/SBIParser";

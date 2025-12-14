@@ -4,7 +4,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && npm run postbuild",
+    "copy:backend": "rm -rf ../../apps/backend/src/common-types && mkdir -p ../../apps/backend/src/common-types && cp -R types ../../apps/backend/src/common-types/",
+    "postbuild": "npm run copy:backend",
     "clean": "rm -rf node_modules dist"
   },
   "devDependencies": {

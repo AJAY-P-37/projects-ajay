@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { getUserModel, IUserDocument } from "./users.model";
 import { Model } from "mongoose";
-import { IUser } from "common-types/dist/types/auth";
+import { IUser } from "../../common-types/types/auth";
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 export const User = createParamDecorator((data: string, ctx: ExecutionContext) => {

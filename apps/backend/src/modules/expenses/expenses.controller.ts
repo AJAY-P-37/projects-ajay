@@ -13,7 +13,7 @@ import {
 import { ExpensesService } from "./expenses.service";
 import { Response } from "express";
 import { User } from "../users/users.service";
-import { IExpensesCategory } from "common-types/dist/types/expenses";
+import { IExpensesCategory } from "../../common-types/types/expenses";
 
 @Controller("expenses")
 export class ExpensesController {

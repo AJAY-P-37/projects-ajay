@@ -8,7 +8,7 @@ import {
   IProcessExpenseFileRequest,
   ProcessedExpense,
   ProcessExpenseFileResponse,
-} from "common-types/dist/types/expenses";
+} from "../../common-types/types/expenses";
 import { StatementParsingService } from "./statements/statements.service";
 import { ICategoryDocument, getCategoryModel, validateCategory } from "./expensesCategories.model";
 

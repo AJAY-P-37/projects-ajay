@@ -53,14 +53,14 @@ const data = {
       isActive: false,
       items: [
         {
-          title: "Monthly tracker",
-          url: "/projects/expenses/monthlyTracker",
-          icon: CalendarArrowUp,
-        },
-        {
           title: "Add categories",
           url: "/projects/expenses/addCategories",
           icon: Split,
+        },
+        {
+          title: "Monthly tracker",
+          url: "/projects/expenses/monthlyTracker",
+          icon: CalendarArrowUp,
         },
         {
           title: "Visualize expenses",

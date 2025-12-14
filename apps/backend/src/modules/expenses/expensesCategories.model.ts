@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { Model, Schema, Document, Connection } from "mongoose";
 import { MongoDB } from "../../mongo/mongoose";
-import { IExpensesCategorySchema } from "common-types/dist/types/expenses";
+import { IExpensesCategorySchema } from "../../common-types/types/expenses";
 
 /** ============================
  *  CATEGORY INTERFACES

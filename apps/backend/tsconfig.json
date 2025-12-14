@@ -12,7 +12,11 @@
     "declaration": true,
     "module": "CommonJS", // 👈 switch
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@common-types/*": ["common-types/*"]
+    }
   },
   "compileOnSave": true,
   "include": ["src"],

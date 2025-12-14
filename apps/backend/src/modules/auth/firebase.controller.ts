@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { expiresIn, FirebaseService } from "./firebase.service";
 import { Response } from "express";
-import { IUser, LoginResponse } from "common-types/dist/types/auth";
+import { IUser, LoginResponse } from "../../common-types/types/auth";
 @Controller("auth")
 export default class FirebaseController {
   private firebaseService: FirebaseService;

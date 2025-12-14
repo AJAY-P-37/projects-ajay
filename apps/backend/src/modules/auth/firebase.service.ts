@@ -2,8 +2,8 @@ import { Injectable, OnModuleInit, UnauthorizedException } from "@nestjs/common"
 import * as admin from "firebase-admin";
 import { UsersService } from "../users/users.service";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { IUser } from "common-types/dist/types/auth";
-import { Bucket } from "@google-cloud/storage";
+import { IUser } from "../../common-types/types/auth";
+import type { Bucket } from "firebase-admin/node_modules/@google-cloud/storage";
 
 // import * as jwt from "jsonwebtoken";
 
@@ -21,7 +21,7 @@ const serviceAccount = {
   universe_domain: process.env.UNIVERSE_DOMAIN,
 };
 
-export const expiresIn = 1000 * 60 * 5; //* 24 * 1; // 1 day(s)
+export const expiresIn = 1000 * 60 * 60; //* 24 * 1; // 1 day(s)
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {

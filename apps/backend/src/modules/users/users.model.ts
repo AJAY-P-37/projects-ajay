@@ -2,7 +2,7 @@
 import { Model, Schema, Document, Connection } from "mongoose";
 // import bcrypt from "bcrypt";
 import { MongoDB } from "../../mongo/mongoose";
-import { IUser } from "common-types/dist/types/auth";
+import { IUser } from "../../common-types/types/auth";
 
 /** ============================
  *  USER INTERFACES

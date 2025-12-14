@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { Model, Schema, Document, Connection } from "mongoose";
 import { MongoDB } from "../../mongo/mongoose";
-import { IExpense } from "common-types/dist/types/expenses";
+import { IExpense } from "../../common-types/types/expenses";
 
 export interface IExpenseDocument extends IExpense, Document {}
 

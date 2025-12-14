@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { Model, Schema, Document, Connection } from "mongoose";
 import { MongoDB } from "../../mongo/mongoose";
-import { IExpenseHistory } from "common-types/dist/types/expenses";
+import { IExpenseHistory } from "../../common-types/types/expenses";
 
 /** ============================
  *  EXPENSE HISTORY INTERFACES

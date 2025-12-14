@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "shadcn-lib/dist/components/ui/sidebar";
+import { Mode } from "../mode";
 
 export function TeamSwitcher({
   teams,
@@ -45,11 +46,12 @@ export function TeamSwitcher({
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
             >
               <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
-                <activeTeam.logo className='size-4' />
+                {/* <activeTeam.logo className='size-4' /> */}
+                <Mode />
               </div>
               <div className='grid flex-1 text-left text-sm leading-tight'>
                 <span className='truncate font-medium'>{activeTeam.name}</span>
-                <span className='truncate text-xs'>{activeTeam.plan}</span>
+                <span className='truncate text-xs'>Mode</span>
               </div>
               {/* <ChevronsUpDown className='ml-auto' /> */}
             </SidebarMenuButton>
