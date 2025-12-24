@@ -7,9 +7,13 @@ import {
   SelectContent,
   SelectItem,
 } from "shadcn-lib/dist/components/ui/select";
-import { Popover, PopoverTrigger, PopoverContent } from "shadcn-lib/dist/components/ui/popover";
+import {
+  Popover as RadixPopover,
+  PopoverTrigger,
+  PopoverContent,
+} from "shadcn-lib/dist/components/ui/popover";
 import { Calendar } from "shadcn-lib/dist/components/ui/calendar";
-import { ErrorPopover } from "./ErrorPopover";
+import { Popover } from "./Popover";
 import { TriangleAlert } from "lucide-react";
 import { TagEditor } from "../storybook/tagEditor";
 // import { useState } from "react";
@@ -41,13 +45,12 @@ export const EditableCell = ({
 }: EditableCellProps) => {
   const r = row.original;
 
-  const error = table.options.meta.errors?.[`${r.id}:${accessor}`];
+  const error: string = table.options.meta.errors?.[`${r.id}:${accessor}`];
   //focus-visible:ring-destructive bg-destructive/10
   const errorClassName = "text-destructive-foreground";
 
   // Value: uses draft if editing
   const value = r._editing ? r._draft?.[accessor] : r[accessor];
-  r._editing && console.log(value);
 
   const update = (val: any) => {
     table.options.meta.updateCell(r.id, accessor as any, val);
@@ -82,11 +85,11 @@ export const EditableCell = ({
     >
       {Cell}
       {error && (
-        <ErrorPopover error={error}>
+        <Popover content={error} isError={true}>
           <div className='absolute -right-2 -top-2 cursor-pointer'>
             <TriangleAlert className={`text-destructive w-4 h-4`} />
           </div>
-        </ErrorPopover>
+        </Popover>
       )}
     </div>
   );
@@ -119,7 +122,7 @@ export const getCellType = (
           placeholder={placeholder}
           type='number'
           value={value}
-          onChange={(e) => update(Number(e.target.value))}
+          onChange={(e) => update(e.target.value ? Number(e.target.value) : e.target.value)}
           className={cn(width, error && errorClassName)}
         />
       );
@@ -156,7 +159,7 @@ export const getCellType = (
       };
 
       return (
-        <Popover>
+        <RadixPopover>
           <PopoverTrigger className='h-9' asChild>
             <button
               className={cn(
@@ -180,7 +183,7 @@ export const getCellType = (
               className='rounded'
             />
           </PopoverContent>
-        </Popover>
+        </RadixPopover>
       );
     }
 

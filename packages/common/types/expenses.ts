@@ -27,9 +27,9 @@ export interface IProcessExpenseFileRequest {
 }
 
 export const statementDocumentOptions = [
-  { value: EStatementType.hdfcDebit, label: "HDFC Bank Debit Statement" },
-  { value: EStatementType.hdfcCredit, label: "HDFC Bank Credit Statement" },
-  { value: EStatementType.sbiDebit, label: "SBI Bank Debit Statement" },
+  { value: EStatementType.hdfcDebit, label: "HDFC Bank Debit Statement", supported: true },
+  { value: EStatementType.hdfcCredit, label: "HDFC Bank Credit Statement", supported: true },
+  { value: EStatementType.sbiDebit, label: "SBI Bank Debit Statement", supported: true },
   { value: EStatementType.sbiCredit, label: "SBI Bank Credit Statement" },
   { value: EStatementType.cubDebit, label: "CUB Bank Debit Statement" },
   { value: EStatementType.unknown, label: "Unknown Bank Statement" },
@@ -57,7 +57,7 @@ export interface ProcessedExpense {
   date?: string;
   category: string;
   amount: number;
-  statementRecord?: string;
+  statementRecord: string;
   statementType?: EStatementType;
 }
 

@@ -1,18 +1,24 @@
 import React from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "shadcn-lib/dist/components/ui/popover";
+import {
+  Popover as RadixPopover,
+  PopoverTrigger,
+  PopoverContent,
+} from "shadcn-lib/dist/components/ui/popover";
 
-export const ErrorPopover = ({
-  error,
+export const Popover = ({
+  content,
   children,
+  isError = false,
 }: {
-  error?: string;
+  content?: React.ReactNode;
   children: React.ReactNode;
+  isError?: boolean;
 }) => {
   const [open, setOpen] = React.useState(false);
   const hoverTimer = React.useRef<NodeJS.Timeout | null>(null);
   const leaveTimer = React.useRef<NodeJS.Timeout | null>(null);
 
-  if (!error) return <>{children}</>;
+  if (!content) return <>{children}</>;
 
   const triggerOpen = (e) => {
     e.preventDefault();
@@ -29,7 +35,7 @@ export const ErrorPopover = ({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <RadixPopover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         asChild
         onMouseEnter={triggerOpen}
@@ -44,15 +50,15 @@ export const ErrorPopover = ({
         align='start'
         side='top'
         // sideOffset={6}
-        className='max-w-full w-full px-2 py-0 text-sm border-destructive text-destructive'
+        className={`max-w-full w-full px-2 py-0 text-sm ${isError ? "border-destructive text-destructive" : "text-foreground"}`}
         onMouseEnter={() => {
           // Keep open if user moves into the content
           if (leaveTimer.current) clearTimeout(leaveTimer.current);
         }}
         onMouseLeave={triggerClose}
       >
-        {error}
+        {content}
       </PopoverContent>
-    </Popover>
+    </RadixPopover>
   );
 };

@@ -27,7 +27,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useDispatch } from "react-redux";
 import { setTable } from "@/store/slices/tableSlice";
 import { usePromise } from "@/hooks/promiseHooks";
-import { IExpensesCategory } from "common-types/types/expenses";
+import { Popover } from "./Popover";
+import { Card } from "shadcn-lib/dist/components/ui/card";
 
 const size = "sm";
 const variant = "default";
@@ -231,7 +232,7 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
 
     // No errors: proceed
     const f = async () => {
-      const save = await actions.saveTable(rows);
+      await actions.saveTable(rows);
     };
     run(f);
   };
@@ -282,28 +283,48 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
           </Button>
         )}
         {actions.importRows && (
-          <Button
-            type='button'
-            size={size}
-            variant={variant}
-            onClick={() => inputRef.current?.click()}
-            className='flex items-center gap-2'
+          <Popover
+            content={
+              <div className='space-y-3'>
+                <p>
+                  Import <strong>xlsx/csv</strong> file with the below columns.
+                </p>
+                <ul className='space-y-1 list-disc list-inside'>
+                  {columns.map((column, index) => (
+                    <li className=''>
+                      <i>{getAccessorKey(column)}</i>
+                    </li>
+                  ))}
+                </ul>
+                <p>
+                  Try clicking <strong>Copy icon</strong> to copy the data with columns and edit.
+                </p>
+              </div>
+            }
           >
-            <Upload className='w-4 h-4' />
-            Import
-            <input
-              ref={inputRef}
-              type='file'
-              className='hidden'
-              accept={`.${["xlsx", "csv"].join(",.")}`}
-              onChange={importRows}
-            />
-          </Button>
+            <Button
+              type='button'
+              size={size}
+              variant={variant}
+              onClick={() => inputRef.current?.click()}
+              className='flex items-center gap-2'
+            >
+              <Upload className='w-4 h-4' />
+              Import
+              <input
+                ref={inputRef}
+                type='file'
+                className='hidden'
+                accept={`.${["xlsx", "csv"].join(",.")}`}
+                onChange={importRows}
+              />
+            </Button>
+          </Popover>
         )}
         {actions.copyTableToClipboard &&
           (copyState === ECopy.copy ? (
             <Button onClick={handleCopyToClipBoard} size={size} variant={variant}>
-              <CopyIcon />
+              <CopyIcon /> Copy
             </Button>
           ) : (
             <Button size={size} variant={variant}>

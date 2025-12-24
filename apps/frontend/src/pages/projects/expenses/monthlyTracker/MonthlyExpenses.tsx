@@ -4,20 +4,16 @@ import { useState, useMemo } from "react";
 import { ExpensesTable } from "./ProcessExpenseTable/Table";
 import { IExpensesCategory } from "common-types/types/expenses";
 import { useForm, UseFormReturn } from "react-hook-form";
-import {
-  currentMonth,
-  currentYear,
-  ExpensesFormData,
-  expensesSchema,
-} from "./MonthlyExpensesFormSchema";
+import { ExpensesFormData, expensesSchema } from "./MonthlyExpensesFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { ExpensesVisual } from "./MonthlyExpenseVisuals/Table";
 import ExpensesService from "@/services/ExpensesService";
 import { useQuery } from "@tanstack/react-query";
+import { Loader } from "@/components/common/storybook/loader";
 
-export const Expenses = () => {
+export const MonthlyExpenses = () => {
   const [currentStep, setCurrentStep] = useState("step1");
 
   const [canProceedStep, setCanProceedStep] = useState({
@@ -34,7 +30,10 @@ export const Expenses = () => {
 
   const { formValues } = useSelector((state: RootState) => state.expenses);
 
-  const { data: categories }: { data: IExpensesCategory[] } = useQuery({
+  const {
+    data: categories,
+    isLoading: isCategoriesLoading,
+  }: { data: IExpensesCategory[]; isLoading: boolean } = useQuery({
     queryKey: ["categories"],
     queryFn: () => new ExpensesService().getCategories(),
     refetchOnWindowFocus: false,
@@ -46,18 +45,6 @@ export const Expenses = () => {
   });
 
   const [monthlyPivotData, setMonthlyPivotData] = useState(null);
-
-  // useEffect(() => {
-  //   const s = formValues.statements.map(async (s) => {
-  //     let blob;
-  //     if (typeof s.file === "string") blob = await fetch(s.file).then((r) => r.blob());
-  //     console.log(blob);
-  //     return {
-  //       ...s,
-  //       file: blob,
-  //     };
-  //   });
-  // });
 
   const expensesFormHook: UseFormReturn<ExpensesFormData> = useForm<ExpensesFormData>({
     resolver: zodResolver(expensesSchema),
@@ -128,7 +115,9 @@ export const Expenses = () => {
     ];
   }, [canProceedStep, expenseData, expensesFormHook]);
 
-  return (
+  return isCategoriesLoading ? (
+    <Loader />
+  ) : (
     <MultiStepForm
       title='Monthly Expense Tracker'
       steps={steps}

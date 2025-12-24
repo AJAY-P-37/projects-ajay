@@ -145,7 +145,7 @@ export function MultiStepForm({
               Back
             </Button>
 
-            {!isLast ? (
+            {!isLast && (
               <Button
                 variant='default'
                 size='sm'
@@ -153,10 +153,6 @@ export function MultiStepForm({
                 disabled={!allowSkip && !steps[currentIndex].canProceed}
               >
                 Next <ArrowRight />
-              </Button>
-            ) : (
-              <Button variant='default' size='sm' onClick={handleSubmit}>
-                Submit
               </Button>
             )}
           </div>

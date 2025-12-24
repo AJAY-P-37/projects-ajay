@@ -20,7 +20,7 @@ import {
 import { Input } from "shadcn-lib/dist/components/ui/input";
 import { getAccessorKey } from "./TableUtils";
 import { getCellType, UIType } from "./EditableCell";
-import { ErrorPopover } from "./ErrorPopover";
+import { Popover } from "./Popover";
 
 interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes<HTMLDivElement> {
   column: Column<TData, TValue>;
@@ -70,7 +70,7 @@ export function DataTableColumnHeader<TData, TValue>({
               />
             )}
           </div>
-          <ErrorPopover>
+          <Popover>
             <div className='absolute right-1 top-1 cursor-pointer'>
               <CircleX
                 className='text-destructive-foreground hover:text-destructive bg-secondary w-4 h-4'
@@ -79,7 +79,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 }}
               />
             </div>
-          </ErrorPopover>
+          </Popover>
         </>
       )}
 

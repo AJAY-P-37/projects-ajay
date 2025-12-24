@@ -12,84 +12,60 @@ export default class ExpensesService {
     statementType,
     statementFilesMetadata,
   }: IProcessExpenseFileRequest) => {
-    const { data, status } = await api.post(`${this.basePath}/processMonthlyExpenseStatements`, {
+    const { data } = await api.post(`${this.basePath}/processMonthlyExpenseStatements`, {
       month,
       year,
       statementType,
       statementFilesMetadata,
     });
-
-    if (status === 200) {
-      Toast.success(data?.message || `Processed your ${statementType} card statement(s)`);
-    } else if (data?.error?.message && (status < 400 || status >= 500)) {
-      Toast.error(data?.error?.message || "Something went wrong");
-    }
     return data;
   };
 
   public saveMonthlyExpenseData = async ({ year, month, expenseData }) => {
-    const { data, status } = await api.post(`${this.basePath}/saveMonthlyExpenseData`, {
+    const { data } = await api.post(`${this.basePath}/saveMonthlyExpenseData`, {
       month,
       year,
       expenseData,
     });
-    if (status === 200) {
-      Toast.success(data?.message || "Saved your monthly expense data");
-    } else if (data?.message && status >= 500) {
-      Toast.error(data?.message || "Could not save your Expense Data! Please contact Admin");
-    }
+
+    return data;
+  };
+
+  public getMonthlyExpenseData = async (year: number, month: number) => {
+    const { data } = await api.get(
+      `${this.basePath}/getMonthlyExpenseData?year=${year}&month=${month}`,
+    );
     return data;
   };
 
   public getMonthlyExpensesPivotTable = async (month: number, year: number) => {
-    const { data, status } = await api.get(
+    const { data } = await api.get(
       `${this.basePath}/getMonthlyExpensesPivotTable?year=${year}&month=${month}`,
     );
-    if (status === 200) {
-      Toast.success(data?.message || "Retrieved your consolidated expense data");
-    } else if (data?.message && status >= 500) {
-      Toast.error(data?.message || "Could not get expense data");
-    }
     return data;
   };
 
   public getCategories = async () => {
-    const { data, status } = await api.get(`${this.basePath}/getCategories`);
-    if (data?.message && status >= 500) {
-      Toast.error(data?.message || "Could not get Categories data");
-    }
+    const { data } = await api.get(`${this.basePath}/getCategories`);
+
     return data;
   };
 
   public saveCategories = async (categories: IExpensesCategory[]) => {
-    const { data, status } = await api.post(`${this.basePath}/saveCategories`, {
+    const { data } = await api.post(`${this.basePath}/saveCategories`, {
       categories,
     });
-    if (status === 200) {
-      Toast.success(data?.message || "Saved your monthly updated Categories");
-    } else if (data?.error?.message && status >= 500) {
-      Toast.error(data?.message || "Could not save your Categories! Please contact Admin");
-    }
     return data;
   };
 
   public getYearlyConsolidatedPivotTable = async (year: number) => {
-    const { data, status } = await api.get(
-      `${this.basePath}/getYearlyConsolidatedPivotTable/${year}`,
-    );
-    if (data?.message && status >= 500) {
-      Toast.error(data?.message || "Could not get Monthly Consolidated Expenses data");
-    }
+    const { data } = await api.get(`${this.basePath}/getYearlyConsolidatedPivotTable/${year}`);
     return data;
   };
 
   public getMonthlyConsolidatedPivotTable = async (year: number) => {
-    const { data, status } = await api.get(
-      `${this.basePath}/getMonthlyConsolidatedPivotTable/${year}`,
-    );
-    if (data?.message && status >= 500) {
-      Toast.error(data?.message || "Could not get Monthly Consolidated Expenses data");
-    }
+    const { data } = await api.get(`${this.basePath}/getMonthlyConsolidatedPivotTable/${year}`);
+
     return data;
   };
 }

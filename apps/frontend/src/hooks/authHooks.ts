@@ -123,7 +123,6 @@ export const useAuthCheck = () => {
   const authService = new AuthService();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const hasHandledRef = useRef(false);
 
   const query = useQuery({
     queryKey: ["auth", "isAuthenticated"],
@@ -133,10 +132,7 @@ export const useAuthCheck = () => {
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
   });
-
   useEffect(() => {
-    // if (hasHandledRef.current) return;
-
     // ✅ logged in
     if (query.isSuccess && query.data?.isAuthenticated) {
       dispatch(loginSuccess(query.data));
@@ -145,8 +141,6 @@ export const useAuthCheck = () => {
 
     // 🚫 logged out or session expired
     if ((query.isSuccess && !query.data?.isAuthenticated) || query.isError) {
-      hasHandledRef.current = true;
-
       dispatch(logout());
       dispatch(logoutAction());
 

@@ -1,11 +1,4 @@
 import { ResponsiveContainer, Cell, Label } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "shadcn-lib/dist/components/ui/card";
 import { Pie, PieChart } from "recharts";
 import {
   ChartContainer,
@@ -52,8 +45,14 @@ const RupeeTooltip = ({ active, payload }: any) => {
   );
 };
 
-export const MonthlyBreakdownPieChart = ({ chartConfig, chartData }) => {
-  const totalAmount = chartData.reduce((sum, d) => sum + d.amount, 0);
+export const YearlyBreakdownCategoryPieChart = ({ chartConfig, categoryTotals }) => {
+  const chartData = Object.entries(categoryTotals)
+    .map((cat) => ({
+      category: cat[0],
+      amount: cat[1],
+    }))
+    .filter((cat) => cat.category !== "Total");
+  const totalAmount = categoryTotals["Total"];
 
   return (
     <div className='min-w-[500px] h-[400px]'>

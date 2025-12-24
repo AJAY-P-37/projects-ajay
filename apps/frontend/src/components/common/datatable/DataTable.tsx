@@ -117,7 +117,6 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
 
     const updated = newRows.find((r) => r.id === rowId)!;
     const freshRow = updated._editing ? updated._draft : updated;
-    console.log(updated, freshRow);
     validateRow(rowId, freshRow, errors, tableSchema, setErrors);
   };
 
@@ -141,7 +140,6 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
       numberFilter: numberFilter,
     },
   });
-  console.log(rows);
 
   const rowRefs = React.useRef<Record<string, HTMLTableRowElement | null>>({});
 
@@ -149,8 +147,6 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
     actions.editRow &&
       setRows((prev) => prev.map((r) => (r.id === id ? { ...r, _editing: true } : r)));
   };
-
-  console.log(errors);
 
   return (
     <div className='px-0 flex flex-col border border-secondary-foreground rounded'>

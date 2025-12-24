@@ -179,7 +179,7 @@ const SignupForm = ({ setExistingAccount }) => {
         </Field>
 
         <FieldDescription className='text-center'>
-          Already have an account?{" "}
+          Already have an account?
           <a href='#' onClick={() => setExistingAccount(true)}>
             Sign in
           </a>

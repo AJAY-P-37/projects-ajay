@@ -36,7 +36,7 @@ export const makeExpenseRowSchema = ({ categories, month, year }) =>
       .number({
         error: "Amount must be a number",
       })
-      .positive("Amount must be greater than 0"),
+      .positive("Amount must be greater than 0 or you may delete this record"),
 
     category: z.string().refine((v) => categories.includes(v), {
       message: "Invalid category",

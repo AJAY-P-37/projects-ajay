@@ -71,6 +71,7 @@ export class StatementParsingService {
         }
         if (keyword.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
           matchedKeywords.push(category);
+          break;
         }
       }
     }
@@ -83,20 +84,23 @@ export class StatementParsingService {
     }
 
     const matchedKeywordsWithComments: string[] = [];
-    const keywordsMap: Record<string, string> = {
-      Self: "Self Transfer",
-      Split: "Split",
+    const keywordsMap: Record<string, string[]> = {
+      "Self Transfer": ["Self"],
+      Split: ["Split"],
     };
 
-    for (const key of Object.keys(keywordsMap)) {
-      if (key.toLowerCase() === comment.toLowerCase()) {
-        return {
-          categoryWithKeyword: keywordsMap[key],
-          categoryMatchedWithKeyword: true,
-        };
-      }
-      if (key.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
-        matchedKeywordsWithComments.push(keywordsMap[key]);
+    for (const keywords of Object.keys(keywordsMap)) {
+      for (const keyword of keywords) {
+        if (keyword.toLowerCase() === comment.toLowerCase()) {
+          return {
+            categoryWithKeyword: keywords,
+            categoryMatchedWithKeyword: true,
+          };
+        }
+        if (keywords.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
+          matchedKeywordsWithComments.push(keywords);
+          break;
+        }
       }
     }
 

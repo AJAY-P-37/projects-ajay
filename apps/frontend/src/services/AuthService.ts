@@ -116,7 +116,7 @@ export default class AuthService {
         Toast.error(
           error.response?.data?.message?.message || error.response?.data?.message || error?.message,
         );
-        console.log(`Error in loginWithGoogle: ${error}`);
+        console.error(`Error in loginWithGoogle: ${error}`);
         throw Error(error);
       });
   };
@@ -140,8 +140,4 @@ export default class AuthService {
       Toast.success(data.message);
     }
   };
-
-  public signupWithPassword = (email: string, password: string) => {};
-
-  public signupWithGoogle = () => {};
 }

@@ -5,9 +5,10 @@ import { ProtectedRoutes } from "./ProtectedRoutes";
 import { Projects } from "@/pages/projects";
 import { Home } from "@/pages/home";
 import { Error } from "@/pages/error";
-import { Expenses } from "@/pages/projects/expenses/monthlyTracker/MonthlyExpenses";
+import { MonthlyExpenses } from "@/pages/projects/expenses/monthlyTracker/MonthlyExpenses";
 import { AddCategories } from "@/pages/projects/expenses/addCategories/CategorizeExpenses";
-import { VisualizeExpenses } from "@/pages/projects/expenses/visualize/VisualizeExpenses";
+import { ExpenseInsights } from "@/pages/projects/expenses/visualize/ExpenseInsights";
+import { UpdateExpenses } from "@/pages/projects/expenses/updateExpenses/UpdateExpenses";
 
 const Routes: RouteObject[] = [
   {
@@ -24,9 +25,10 @@ const Routes: RouteObject[] = [
         Component: ProtectedRoutes,
         children: [
           { index: true, Component: Projects },
-          { path: "expenses/monthlyTracker", Component: Expenses },
+          { path: "expenses/monthlyTracker", Component: MonthlyExpenses },
           { path: "expenses/addCategories", Component: AddCategories },
-          { path: "expenses/visualize", Component: VisualizeExpenses },
+          { path: "expenses/expenseInsights", Component: ExpenseInsights },
+          { path: "expenses/updateExpense", Component: UpdateExpenses },
         ],
       },
     ],

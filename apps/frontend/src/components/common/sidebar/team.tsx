@@ -19,6 +19,7 @@ import {
   useSidebar,
 } from "shadcn-lib/dist/components/ui/sidebar";
 import { Mode } from "../mode";
+import { Link } from "react-router-dom";
 
 export function TeamSwitcher({
   teams,
@@ -39,22 +40,33 @@ export function TeamSwitcher({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
+        {/* <Mode /> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size='lg'
-              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+            <div
+              // size='lg'
+              className='peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md 
+                p-2 text-left outline-none ring-sidebar-ring transition-[width,height,padding] 
+                focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground 
+                disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 
+                aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent 
+                data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent 
+                data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 [&>span:last-child]:truncate 
+                [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-12 
+                text-sm group-data-[collapsible=icon]:!p-0'
             >
               <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
                 {/* <activeTeam.logo className='size-4' /> */}
                 <Mode />
               </div>
-              <div className='grid flex-1 text-left text-sm leading-tight'>
+
+              <Link to={"/"} className='grid flex-1 text-left text-sm leading-tight'>
                 <span className='truncate font-medium'>{activeTeam.name}</span>
-                <span className='truncate text-xs'>Mode</span>
-              </div>
+                <span className='truncate text-xs'>Mode</span>{" "}
+              </Link>
+
               {/* <ChevronsUpDown className='ml-auto' /> */}
-            </SidebarMenuButton>
+            </div>
           </DropdownMenuTrigger>
           {/* <DropdownMenuContent
             className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'

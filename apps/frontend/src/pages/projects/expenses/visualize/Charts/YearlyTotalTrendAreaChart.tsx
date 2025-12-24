@@ -18,8 +18,8 @@ import {
 ============================ */
 export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
   const trends = [
-    { label: "Total", key: "Total" },
-    { label: "Total Expenses", key: "TotalExcludingInvestment" },
+    // { label: "Total", key: "Total" },
+    { label: "Total Expense", key: "TotalExcludingInvestment" },
     { label: "Total Investment", key: "Investment" },
   ];
   const categoryTotals: Record<string, number> = {
@@ -29,7 +29,7 @@ export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
   };
 
   yearlyData.forEach((row) => {
-    categoryTotals.Total += row.Total || 0;
+    // categoryTotals.Total += row.Total || 0;
     categoryTotals.TotalExcludingInvestment += row.TotalExcludingInvestment || 0;
     categoryTotals.Investment += row.Investment || 0;
   });
@@ -38,11 +38,11 @@ export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
       <CardHeader className='flex flex-col items-stretch border-b !p-0 sm:flex-row'>
         <div className='flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3'>
           <CardTitle>Yearly Trend</CardTitle>
-          {/* <CardDescription>Expense vs Investment</CardDescription> */}
+          <CardDescription>Expense vs Investment</CardDescription>
         </div>
         {trends.map((trend) => (
           <div className='flex overflow-x-auto' key={trend.key}>
-            <div className='data-[active=true]:bg-muted/50 flex flex-col justify-center gap-1 border-l px-6 py-4 text-left'>
+            <div className='data-[active=true]:bg-muted/50 flex flex-col flex-1 justify-center gap-1 border-t sm:border-t-0 sm:border-l px-6 py-4 text-left'>
               <span className='text-muted-foreground text-xs'>{trend.label}</span>
               <span className='text-md font-semibold'>
                 ₹{(categoryTotals[trend.key] || 0).toLocaleString()}
@@ -58,14 +58,14 @@ export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
               <XAxis dataKey='month' />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Area
+              {/* <Area
                 type='monotone'
                 dataKey='Total'
                 stroke='var(--chart-1)'
                 fill='var(--chart-1)'
                 fillOpacity={0.3}
                 name='Total'
-              />
+              /> */}
               <Area
                 type='monotone'
                 dataKey='Investment'
@@ -80,7 +80,7 @@ export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
                 stroke='var(--chart-5)'
                 fill='var(--chart-5)'
                 fillOpacity={0.3}
-                name='Total Expenses'
+                name='Total Expense'
               />
             </AreaChart>
           </ResponsiveContainer>

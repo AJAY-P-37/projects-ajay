@@ -56,7 +56,6 @@ export class FirebaseService implements OnModuleInit {
     try {
       const storageBucket: Bucket = this.getFirebaseStorage();
       await storageBucket.file(filePath).delete();
-      console.log("File deleted:", filePath);
     } catch (err) {
       console.error("Error deleting file:", err);
     }

@@ -15,22 +15,27 @@ const cards = [
   },
   {
     title: "2. Monthly Tracker",
-    description: "Track your expenses month by month",
+    description: "Track expense month by month",
     path: "/projects/expenses/monthlyTracker",
   },
   {
-    title: "3. Visualize",
-    description: "Analyze expenses with charts and insights",
-    path: "/projects/expenses/visualize",
+    title: "3. Visualize Expense",
+    description: "Analyze expense with charts and insights",
+    path: "/projects/expenses/expenseInsights",
+  },
+  {
+    title: "3. Update Expense",
+    description: "Add or Update existing expense if you missed any",
+    path: "/projects/expenses/updateExpense",
   },
 ];
 
 export function Home() {
   return (
     <Card className='m-6 p-6'>
-      <CardTitle className='text-2xl font-semibold mb-6'>Expense Management</CardTitle>
+      <CardTitle className='text-2xl font-semibold mb-6'>Expense Tracking</CardTitle>
 
-      <CardContent className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+      <CardContent className='grid gap-6 grid-cols-2'>
         {cards.map((card) => (
           <Link
             key={card.path}

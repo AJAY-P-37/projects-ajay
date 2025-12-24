@@ -39,7 +39,7 @@ export const ExpensesVisual = ({ rows = [], categories, expensesForm }: Expenses
     <>
       <Card className='mb-4'>
         <CardHeader>
-          <CardTitle>Expenses Pivot Table</CardTitle>
+          <CardTitle>Monthly breakdown of Expense</CardTitle>
           <CardDescription>
             {monthName} {year}
           </CardDescription>

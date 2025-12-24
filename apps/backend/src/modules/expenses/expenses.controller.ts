@@ -46,6 +46,20 @@ export class ExpensesController {
     return res.status(200).json(result);
   }
 
+  @Get("getMonthlyExpenseData")
+  async getMonthlyExpenseData(
+    @User("uid") userId: string,
+    @Query("year") year: string,
+    @Query("month") month: string,
+    @Res() res: Response,
+  ) {
+    const result = await this.expensesService.getMonthlyExpenseData(
+      { year: Number(year), month: Number(month) },
+      userId,
+    );
+    return res.status(200).json(result);
+  }
+
   @Get("getMonthlyExpensesPivotTable")
   async getMonthlyExpensesPivotTable(
     @User("uid") userId: string,

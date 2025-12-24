@@ -3,19 +3,43 @@ import { AxiosError } from "axios";
 import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
 
+export interface ApiError {
+  status: number;
+  message: string;
+  code?: string;
+}
+
 export const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL,
   withCredentials: true,
 });
 
+// Normalize all errors here
 api.interceptors.response.use(
-  (res) => res,
-  (error) => {
+  (response) => response,
+  (error: AxiosError<any>) => {
+    const apiError: ApiError = {
+      status: error.response?.status ?? 500,
+      message:
+        error.response?.data?.error?.message ||
+        error.response?.data?.message ||
+        "Unexpected server error",
+      code: error.response?.data?.error?.code,
+    };
+
     return Promise.reject(error);
   },
 );
 
+export class AuthError extends Error {
+  constructor(message = "Unauthorized") {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
 export const isAuthError = (error: unknown) => {
+  if (!error || typeof error !== "object") return false;
   if (!(error instanceof AxiosError)) return false;
 
   const { status, data } = error.response || {};
@@ -43,6 +67,7 @@ export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error) => {
       if (isAuthError(error)) {
+        Toast.error("Session expired. Please log in again.");
         queryClient.invalidateQueries({
           queryKey: ["auth", "isAuthenticated"],
         });

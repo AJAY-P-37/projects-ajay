@@ -2,20 +2,13 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
   CalendarArrowUp,
   ChartBarStacked,
-  Command,
   Frame,
   GalleryVerticalEnd,
   IndianRupee,
-  Map,
-  PieChart,
-  Settings2,
+  Pencil,
   Split,
-  SquareTerminal,
 } from "lucide-react";
 
 import {
@@ -47,10 +40,10 @@ const data = {
   ],
   navMain: [
     {
-      title: "Expense Management",
+      title: "Expense Tracking",
       url: "#",
       icon: IndianRupee,
-      isActive: false,
+      isActive: true,
       items: [
         {
           title: "Add categories",
@@ -63,9 +56,14 @@ const data = {
           icon: CalendarArrowUp,
         },
         {
-          title: "Visualize expenses",
-          url: "/projects/expenses/visualize",
+          title: "Visualize expense",
+          url: "/projects/expenses/expenseInsights",
           icon: ChartBarStacked,
+        },
+        {
+          title: "Update expense",
+          url: "/projects/expenses/updateExpense",
+          icon: Pencil,
         },
       ],
     },
@@ -137,7 +135,7 @@ const data = {
   ],
   projects: [
     {
-      name: "Expense Management",
+      name: "Expense Tracking",
       url: "/projects/expenses/monthlyTracker",
       icon: Frame,
     },

@@ -11,6 +11,8 @@ import {
 import { ExpensesFormData } from "../MonthlyExpensesFormSchema";
 import { ZodObject } from "zod";
 import ExpensesService from "@/services/ExpensesService";
+import { Toast } from "shadcn-lib/dist/components/ui/sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export type ExpensesTableProps = {
   rows: ProcessExpenseFileResponse["processedData"];
@@ -50,12 +52,36 @@ export const ExpensesTable = ({
     categories,
   });
 
+  const { mutateAsync: saveExpenses } = useMutation({
+    mutationFn: async ({
+      data,
+      month,
+      year,
+    }: {
+      data: ProcessExpenseFileResponse["processedData"];
+      month: number;
+      year: number;
+    }) => {
+      const expensesService = new ExpensesService();
+      const savedData = await expensesService.saveMonthlyExpenseData({
+        month,
+        year,
+        expenseData: data,
+      });
+      const monthlyExpenseData = await expensesService.getMonthlyExpensesPivotTable(month, year);
+      setExpenseData(data);
+      setMonthlyPivotData(monthlyExpenseData);
+      return savedData;
+    },
+    onSuccess: (data: any) => {
+      Toast.success(data?.message || "Saved monthly expense data");
+    },
+    onError: (error) => {
+      Toast.error(error?.message || "Could not save expense");
+    },
+  });
   const onSaveTable = async (data: ProcessExpenseFileResponse["processedData"]) => {
-    const expensesService = new ExpensesService();
-    await expensesService.saveMonthlyExpenseData({ month, year, expenseData: data });
-    const monthlyExpenseData = await expensesService.getMonthlyExpensesPivotTable(month, year);
-    setExpenseData(data);
-    setMonthlyPivotData(monthlyExpenseData);
+    await saveExpenses({ data, month, year });
   };
 
   return (

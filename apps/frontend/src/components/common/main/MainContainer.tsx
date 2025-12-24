@@ -1,18 +1,14 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AppMainSidebar } from "../sidebar/app-sidebar";
 import { useAuthCheck } from "@/hooks/authHooks";
-import { Skeleton } from "shadcn-lib/dist/components/ui/skeleton";
+import { Loader } from "../storybook/loader";
 
 export const MainContainer = () => {
   const { isAuthenticated, isLoading } = useAuthCheck();
   const location = useLocation();
 
   if (isLoading) {
-    return (
-      <div className='flex flex-1 p-4'>
-        <Skeleton className='min-h-[100vh] flex-1 rounded-xl' />
-      </div>
-    );
+    return <Loader />;
   }
 
   const isAuthRoute = location.pathname.startsWith("/auth");

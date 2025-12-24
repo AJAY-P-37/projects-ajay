@@ -61,10 +61,11 @@ export class FirebaseService {
       const uploadResults = [];
       await Promise.all(
         filesArray.map(async (file) => {
-          const storageRef = refStorage(storage, `${path}/${file.name}_${timestamp}`);
+          const storageRef = refStorage(
+            storage,
+            `${path}/${file.name}_${crypto.randomUUID()}_${timestamp}`,
+          );
           const snapshot = await uploadBytes(storageRef, file);
-
-          console.log("✅ Uploaded:", file.name, snapshot);
 
           uploadResults.push({
             storageRef,

@@ -94,7 +94,6 @@ export class ExpensesService implements OnModuleInit {
       userId,
       date: { $gte: start, $lte: end },
     });
-    console.log({ userId, year, month, start, end, monthlyExpenses });
 
     const consolidatedData: Record<string, number> = {};
 
@@ -139,7 +138,7 @@ export class ExpensesService implements OnModuleInit {
 
     const { start, end } = this.getMonthRange(year, month);
 
-    await this.ExpensesModel.deleteMany({ date: { $gte: start, $lte: end } });
+    await this.ExpensesModel.deleteMany({ userId, date: { $gte: start, $lte: end } });
 
     for (let index = 0; index < data.length; index++) {
       const expense = data[index];
@@ -183,8 +182,31 @@ export class ExpensesService implements OnModuleInit {
         { upsert: true },
       );
     }
+    const monthName = new Date(year, month).toLocaleString("en-US", {
+      month: "long",
+    });
+    return { message: `Saved ${year} ${monthName} month expense data` };
+  }
 
-    return { message: "Saved your monthly expense data" };
+  async getMonthlyExpenseData(body: any, userId: string) {
+    const month = parseInt(body.month);
+    const year = parseInt(body.year);
+
+    const { start, end } = this.getMonthRange(year, month);
+
+    const monthlyExpenses = await this.ExpensesModel.find({
+      userId,
+      date: { $gte: start, $lte: end },
+    });
+    return monthlyExpenses.map((x) => {
+      return {
+        date: x.date,
+        category: x.category,
+        amount: x.amount,
+        statementRecord: x.statementRecord,
+        statementType: x.statementType,
+      };
+    });
   }
 
   /** ---------------------------------------------------
@@ -223,11 +245,12 @@ export class ExpensesService implements OnModuleInit {
           });
         }),
       );
-      return { message: "Saved your Categories data" };
+      return { message: "Saved Categories data" };
     } catch (error: any) {
       return { error: `Error saving categories: ${error?.message}` };
     }
   }
+
   async getYearlyConsolidatedPivotTable(
     year: number,
     userId: string,
@@ -299,7 +322,7 @@ export class ExpensesService implements OnModuleInit {
     const monthlyData: Record<string, Record<string, number>> = {};
 
     const months = Array.from({ length: 12 }, (_, i) => {
-      const date = new Date(2024, i, 1);
+      const date = new Date(year, i, 1);
       return date.toLocaleString("default", { month: "long" });
     });
 
@@ -310,12 +333,12 @@ export class ExpensesService implements OnModuleInit {
 
     // Aggregate expenses
     yearlyExpenses.forEach((exp) => {
-      const month = months[exp.date.getMonth()];
-      const cat = exp.category;
-      const amt = roundOff(Number(exp.amount));
+      const month = months[exp?.date?.getMonth()];
+      const cat = exp?.category;
+      const amt = roundOff(Number(exp?.amount));
 
       // Ensure it's a known category
-      if (monthlyData[month][cat] !== undefined) {
+      if (monthlyData?.[month]?.[cat] !== undefined) {
         monthlyData[month][cat] = roundOff(monthlyData[month][cat] + amt);
       }
     });

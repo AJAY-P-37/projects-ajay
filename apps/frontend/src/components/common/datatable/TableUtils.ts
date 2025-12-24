@@ -122,3 +122,23 @@ export const parseExcel = async (file: File): Promise<any[]> => {
     reader.readAsArrayBuffer(file);
   });
 };
+
+export function excelSerialToDate(serial: number): Date {
+  const EXCEL_EPOCH = new Date(Date.UTC(1899, 11, 30));
+  return new Date(EXCEL_EPOCH.getTime() + serial * 86400000);
+}
+
+export function normalizeExcelDate(value: any): string {
+  // Excel serial number
+  if (typeof value === "number") {
+    return excelSerialToDate(value).toISOString().split("T")[0];
+  }
+
+  // Date string
+  const parsed = new Date(value);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split("T")[0];
+  }
+
+  throw new Error("Invalid date format");
+}
