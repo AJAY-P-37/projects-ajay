@@ -243,7 +243,7 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
                 <ul className='space-y-1 list-disc list-inside'>
                   {columns.map((column, index) => (
                     <li key={getAccessorKey(column)}>
-                      <i>{getAccessorKey(column)}</i> -{" "}
+                      <i className='font-bold'>{getAccessorKey(column)}</i> -{" "}
                       <span>{actions?.importColumnDetails?.[getAccessorKey(column)]}</span>
                     </li>
                   ))}
@@ -267,7 +267,7 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
                 ref={inputRef}
                 type='file'
                 className='hidden'
-                accept={`.${["xlsx", "csv"].join(",.")}`}
+                accept={`.${["xlsx", "xls"].join(",.")}`}
                 onChange={importRows}
               />
             </Button>

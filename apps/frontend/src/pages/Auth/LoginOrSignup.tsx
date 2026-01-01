@@ -33,7 +33,7 @@ export const LoginOrSignupForm = ({ className, ...props }: React.ComponentProps<
         <div className={cn("flex flex-col gap-6", className)} {...props}>
           <Card>
             <CardHeader className='text-center'>
-              <CardTitle className='text-xl'>PROJECTS - AJAY</CardTitle>
+              <CardTitle className='text-xl'>Projects by Ajay</CardTitle>
               <CardDescription>
                 {`${existingAccount ? "Login" : "Signup"} with your Google account`}
               </CardDescription>
@@ -57,10 +57,10 @@ export const LoginOrSignupForm = ({ className, ...props }: React.ComponentProps<
               )}
             </CardContent>
           </Card>
-          <div className='text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4'>
+          {/* <div className='text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4'>
             By clicking continue, you agree to our <a href='#'>Terms of Service</a> and{" "}
             <a href='#'>Privacy Policy</a>.
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
@@ -104,16 +104,16 @@ const LoginForm = ({ setExistingAccount }) => {
           </Button>
         </FieldGroup>
 
-        <div className='text-center text-sm'>
+        <FieldDescription className='text-center'>
           Don&apos;t have an account?{" "}
           <a
-            href='#'
+            // href=''
             className='underline underline-offset-4'
             onClick={() => setExistingAccount(false)}
           >
             Sign up
           </a>
-        </div>
+        </FieldDescription>
       </div>
     </form>
   );
@@ -179,8 +179,11 @@ const SignupForm = ({ setExistingAccount }) => {
         </Field>
 
         <FieldDescription className='text-center'>
-          Already have an account?
-          <a href='#' onClick={() => setExistingAccount(true)}>
+          Already have an account?{" "}
+          <a
+            // href='#'
+            onClick={() => setExistingAccount(true)}
+          >
             Sign in
           </a>
         </FieldDescription>

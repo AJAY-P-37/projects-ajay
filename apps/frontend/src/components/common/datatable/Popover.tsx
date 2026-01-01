@@ -16,22 +16,25 @@ export const Popover = ({
 }) => {
   const [open, setOpen] = React.useState(false);
   const hoverTimer = React.useRef<NodeJS.Timeout | null>(null);
-  const leaveTimer = React.useRef<NodeJS.Timeout | null>(null);
 
   if (!content) return <>{children}</>;
 
-  const triggerOpen = (e) => {
-    e.preventDefault();
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    hoverTimer.current = setTimeout(() => setOpen(true), 0);
+  // Only open on hover for desktop, and on click/tap for mobile
+  const triggerOpen = (e: React.MouseEvent | React.TouchEvent) => {
+    if (e.type === "touchstart") {
+      setOpen((prev) => !prev);
+    } else {
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
+      hoverTimer.current = setTimeout(() => setOpen(true), 0);
+    }
   };
 
-  const triggerClose = (e) => {
-    e.preventDefault();
-    // Delay closing so small mouse movements don't cause flicker
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    setOpen(false);
-    // leaveTimer.current = setTimeout(() => setOpen(false), 150);
+  const triggerClose = (e: React.MouseEvent | React.TouchEvent) => {
+    if (e.type === "touchend") {
+      setOpen(false);
+    } else {
+      setOpen(false);
+    }
   };
 
   return (
@@ -45,15 +48,13 @@ export const Popover = ({
       >
         {children}
       </PopoverTrigger>
-
       <PopoverContent
         align='start'
         side='top'
-        // sideOffset={6}
         className={`max-w-full w-full px-2 py-0 text-sm ${isError ? "border-destructive text-destructive" : "text-foreground"}`}
+        style={{ pointerEvents: open ? "auto" : "none" }} // allow pointer events only when open
         onMouseEnter={() => {
-          // Keep open if user moves into the content
-          if (leaveTimer.current) clearTimeout(leaveTimer.current);
+          if (hoverTimer.current) clearTimeout(hoverTimer.current);
         }}
         onMouseLeave={triggerClose}
       >
