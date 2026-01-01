@@ -30,7 +30,7 @@ export const YearlyCategoryBreakdownBarChart = ({
     .filter((cat) => cat.category !== "Total")
     .sort((a, b) => b.amount - a.amount);
   return (
-    <div className='min-w-[500px] h-[400px]'>
+    <div className='min-w-[500px] h-[400px] p-2'>
       <ResponsiveContainer width='100%' height='100%'>
         <BarChart data={chartData} layout='vertical' margin={{ right: 80, left: 20 }}>
           {/* <CartesianGrid
@@ -43,7 +43,7 @@ export const YearlyCategoryBreakdownBarChart = ({
           <XAxis type='number' tickFormatter={(v) => `₹${v / 1000}k`} />
 
           <CartesianGrid stroke='var(--chart-grid)' strokeDasharray='3 3' />
-          <YAxis type='category' dataKey='category' width={120} />
+          <YAxis type='category' dataKey='category' />
           <Tooltip
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;

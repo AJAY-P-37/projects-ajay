@@ -21,7 +21,7 @@ const serviceAccount = {
   universe_domain: process.env.UNIVERSE_DOMAIN,
 };
 
-export const expiresIn = 1000 * 60 * 60; //* 24 * 1; // 1 day(s)
+export const expiresIn = 1000 * 60 * 60 * (Number(process.env.SESSION_TIMEOUT) ?? 1); //* 24 * 1; // 1 day(s)
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {

@@ -62,6 +62,7 @@ export function YearlyBreakdownBarChart({
               ]}
               control={control}
               label=''
+              className='w-36'
             />
           </CardAction>
         </div>

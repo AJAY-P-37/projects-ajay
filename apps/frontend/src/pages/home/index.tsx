@@ -35,7 +35,7 @@ export function Home() {
     <Card className='m-6 p-6'>
       <CardTitle className='text-2xl font-semibold mb-6'>Expense Tracking</CardTitle>
 
-      <CardContent className='grid gap-6 grid-cols-2'>
+      <CardContent className='grid gap-6 sm:grid-cols-1 md:grid-cols-2'>
         {cards.map((card) => (
           <Link
             key={card.path}

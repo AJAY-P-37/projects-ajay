@@ -112,25 +112,33 @@ export const ActionsColumn = <TData extends BaseRow<TData>>({
         {!original._editing ? (
           <>
             {actions.editRow && (
-              <Button size={size} variant={variant} onClick={() => handleStartEdit(original.id)}>
-                <EditIcon />
-              </Button>
+              <Popover content={"Edit row"}>
+                <Button size={size} variant={variant} onClick={() => handleStartEdit(original.id)}>
+                  <EditIcon />
+                </Button>
+              </Popover>
             )}
             {actions.deleteRow && (
-              <Button size={size} variant={variant} onClick={() => handleDelete(original.id)}>
-                <TrashIcon />
-              </Button>
+              <Popover content={"Delete row"}>
+                <Button size={size} variant={variant} onClick={() => handleDelete(original.id)}>
+                  <TrashIcon />
+                </Button>
+              </Popover>
             )}
           </>
         ) : (
           actions.editRow && (
             <>
-              <Button size={size} variant={variant} onClick={() => handleSaveRow(original.id)}>
-                <SaveIcon />
-              </Button>
-              <Button size={size} variant={variant} onClick={() => handleCancel(original.id)}>
-                <CircleX />
-              </Button>
+              <Popover content={"Save changes"}>
+                <Button size={size} variant={variant} onClick={() => handleSaveRow(original.id)}>
+                  <SaveIcon />
+                </Button>
+              </Popover>
+              <Popover content={"Cancel changes"}>
+                <Button size={size} variant={variant} onClick={() => handleCancel(original.id)}>
+                  <CircleX />
+                </Button>
+              </Popover>
             </>
           )
         )}
@@ -291,7 +299,7 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
                 </p>
                 <ul className='space-y-1 list-disc list-inside'>
                   {columns.map((column, index) => (
-                    <li className=''>
+                    <li key={getAccessorKey(column)}>
                       <i>{getAccessorKey(column)}</i>
                     </li>
                   ))}

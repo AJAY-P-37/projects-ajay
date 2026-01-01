@@ -131,7 +131,7 @@ export const UpdateExpenses = () => {
   };
 
   return (
-    <Card className='m-8 border-0'>
+    <Card className='mx-3 my-8 border-0'>
       <CardHeader>
         <CardTitle>Update Expense</CardTitle>
         <CardDescription>

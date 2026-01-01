@@ -188,20 +188,12 @@ export const ExpenseInsights = () => {
             <CardDescription>Monthly trend and category-wise breakdown</CardDescription>
           </div>
 
-          <FormSelect
-            name='year'
-            options={years}
-            control={control}
-            label=''
-            className='w-[120px]'
-          />
+          <FormSelect name='year' options={years} control={control} label='' className='!w-20' />
         </CardHeader>
 
         <CardContent className='space-y-6'>
           {isYearlyDataPresent ? (
             <>
-              {/* ---- KPI ROW (recommended) ---- */}
-              {/* <YearlyKpiSummary totals={...} /> */}
               <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
                 <KpiCard label='Total Spend' value={`₹${categoryTotals.Total.toLocaleString()}`} />
 
@@ -237,7 +229,7 @@ export const ExpenseInsights = () => {
               </div>
 
               {/* ---- CATEGORY COMPARISON ---- */}
-              <div className='grid grid-cols-1 xl:grid-cols-2 gap-6 border rounded-md py-4'>
+              <div className='grid grid-cols-1 xl:grid-cols-2 overflow-auto gap-6 border rounded-sm py-4'>
                 <YearlyCategoryBreakdownBarChart
                   categoryColors={categoryColors}
                   categoryTotals={categoryTotals}
@@ -272,13 +264,13 @@ export const ExpenseInsights = () => {
             options={months.map((m) => ({ ...m, value: m.label }))}
             control={control}
             label=''
-            className='w-[140px]'
+            className='!w-36'
           />
         </CardHeader>
 
         <CardContent className='px-6'>
           {monthlyChartData.length > 0 ? (
-            <div className='grid grid-cols-1 xl:grid-cols-2 gap-6 border rounded-sm py-4'>
+            <div className='grid grid-cols-1 xl:grid-cols-2 overflow-auto gap-6 border rounded-sm py-4'>
               <MonthlyBreakdownBarChart
                 chartData={[...monthlyChartData].sort((a, b) => b.amount - a.amount)}
                 categoryColors={categoryColors}

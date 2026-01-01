@@ -57,15 +57,15 @@ export function AddCategories() {
   return isCategoriesLoading ? (
     <Loader />
   ) : (
-    <Card className='m-8 border-0'>
+    <Card className='mx-3 my-8 border-0'>
       <CardHeader>
         <CardTitle>Set Up Expense Categories</CardTitle>
-        {categories.length === 0 && (
+        {categories?.length === 0 && (
           <CardDescription>
             Add categories like Rent, Food, Entertainment to track and get insights.
           </CardDescription>
         )}
-        {categories.filter((cat) => cat.category === "Investment").length === 0 && (
+        {categories?.filter((cat) => cat.category === "Investment").length === 0 && (
           <CardDescription>
             Add Investment as a category to visualize your spendings and savings.
           </CardDescription>
@@ -89,7 +89,7 @@ export function AddCategories() {
                 Toast.error("Import with category and keywords as columns");
                 return;
               }
-              categories.push({
+              categories?.push({
                 category: row.category?.trim() ?? "",
                 keywords:
                   typeof row.keywords === "string"
@@ -98,7 +98,7 @@ export function AddCategories() {
               });
             }
             const importRows = [];
-            categories.map((row) => {
+            categories?.map((row) => {
               const newRow = {
                 ...defaultRow(),
                 category: row.category,

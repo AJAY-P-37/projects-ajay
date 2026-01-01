@@ -63,13 +63,19 @@ export class StatementParsingService {
     const matchedKeywords: string[] = [];
     for (const { category, keywords } of categories) {
       for (const keyword of keywords) {
-        if (keyword.toLowerCase() === comment.toLowerCase()) {
+        if (
+          keyword.toLowerCase() === comment.toLowerCase() ||
+          category.toLowerCase() === comment.toLowerCase()
+        ) {
           return {
             categoryWithKeyword: category,
             categoryMatchedWithKeyword: true,
           };
         }
-        if (keyword.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
+        if (
+          keyword.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase() ||
+          category.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()
+        ) {
           matchedKeywords.push(category);
           break;
         }

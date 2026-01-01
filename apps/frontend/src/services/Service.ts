@@ -21,13 +21,16 @@ api.interceptors.response.use(
     const apiError: ApiError = {
       status: error.response?.status ?? 500,
       message:
-        error.response?.data?.error?.message ||
-        error.response?.data?.message ||
-        "Unexpected server error",
+        typeof error.response?.data?.error === "string" &&
+        error.response?.data?.error?.toLowerCase() === "unauthorized"
+          ? "Unauthorized"
+          : error.response?.data?.error?.message ||
+            error.response?.data?.message ||
+            "Unexpected server error",
       code: error.response?.data?.error?.code,
     };
 
-    return Promise.reject(error);
+    return Promise.reject(apiError);
   },
 );
 
@@ -38,16 +41,14 @@ export class AuthError extends Error {
   }
 }
 
-export const isAuthError = (error: unknown) => {
+export const isAuthError = (error: any) => {
   if (!error || typeof error !== "object") return false;
-  if (!(error instanceof AxiosError)) return false;
+  // if (!(error instanceof AxiosError)) return false;
 
-  const { status, data } = error.response || {};
+  const { status, message } = error || {};
 
   return (
-    status === 401 &&
-    typeof data?.message === "string" &&
-    data.error.toLowerCase().includes("unauthorized")
+    status === 401 && typeof message === "string" && message.toLowerCase().includes("unauthorized")
   );
 };
 
