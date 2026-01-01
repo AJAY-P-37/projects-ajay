@@ -160,8 +160,7 @@ interface TableActionsProps<TData extends BaseRow<TData>, TValue> {
   bottomRef: RefObject<HTMLDivElement>;
   rowRefs: RefObject<Record<string, HTMLTableRowElement | null>>;
 }
-export const TableActions = <TData extends BaseRow<TData>, TValue>({
-  name,
+export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
   columns,
   rows,
   setRows,
@@ -170,7 +169,6 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
   setErrors,
   createEmptyRow,
   bottomRef,
-  rowRefs,
 }: TableActionsProps<TData, TValue>) => {
   const inputRef = useRef(null);
 
@@ -217,6 +215,7 @@ export const TableActions = <TData extends BaseRow<TData>, TValue>({
     const file = e.target.files[0];
     const data = await parseExcel(file);
     const importRows = actions.importRows(data); // Imported rows transformation methods
+    if (!importRows || importRows.length === 0) return;
     setRows(importRows);
     validateAll(importRows, tableSchema, setErrors);
   };

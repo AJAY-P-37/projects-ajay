@@ -8,7 +8,6 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
   useReactTable,
-  FilterFn,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -21,7 +20,7 @@ import {
 import { RowData } from "@tanstack/react-table";
 import { ZodSchema } from "zod";
 import { ResizeHandle, useColumnResize } from "./Resize";
-import { ActionsColumn, TableActions, TableActionsFooter } from "./Actions";
+import { ActionsColumn, TableActions, TableActionsFooter, TableActionsHeader } from "./Actions";
 import {
   collectAllErrors,
   getAccessorKey,
@@ -29,8 +28,6 @@ import {
   removeRowHighlight,
   validateRow,
 } from "./TableUtils";
-import { Card, CardContent } from "shadcn-lib/dist/components/ui/card";
-import { Input } from "shadcn-lib/dist/components/ui/input";
 import { numberFilter } from "./Filters";
 
 declare module "@tanstack/react-table" {
@@ -150,7 +147,7 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
 
   return (
     <div className='px-0 flex flex-col border border-secondary-foreground rounded'>
-      <TableActions
+      <TableActionsHeader
         name={name}
         columns={columns}
         rows={rows}
