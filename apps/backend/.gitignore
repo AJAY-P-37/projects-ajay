@@ -11,3 +11,5 @@ node_modules/
 
 
 src/common-types
+
+migration.js

@@ -6,10 +6,12 @@ import {
 } from "../monthlyTracker/ProcessExpenseTable/Columns";
 import { useForm, UseFormReturn } from "react-hook-form";
 import {
+  EStatementType,
   IExpensesCategory,
   IProcessExpenseFileRequest,
   ProcessedExpense,
   ProcessExpenseFileResponse,
+  statementDocumentOptions,
 } from "common-types/types/expenses";
 import {
   currentMonth,
@@ -154,6 +156,13 @@ export const UpdateExpenses = () => {
             editRow: true,
             deleteRow: true,
             copyTableToClipboard: true,
+            importColumnDetails: {
+              amount: "Amount spent in Number format which is greater than 0",
+              category: "Category of the expense in Text format",
+              date: `Date of the expense in Date format (yyyy-mm-dd or mm/dd/yyyy) for the selected month ${monthName} and year ${year}`,
+              statementRecord: "Record from the bank statement in Text format",
+              statementType: `Type of the bank statement in Text format with the valid options such as ${statementDocumentOptions.map((option) => `"${option.label}"`).join(", ")}`,
+            },
             importRows: (data) => {
               const importRows = [];
 
@@ -199,14 +208,18 @@ export const UpdateExpenses = () => {
                   category: String(row.category).trim(),
                   amount,
                   statementRecord: row.statementrecord?.toString().trim() ?? "",
-                  statementType: row.statementtype ?? undefined,
+                  statementType:
+                    (statementDocumentOptions.find((option) => option.label === row.statementtype)
+                      ?.value as EStatementType) ?? EStatementType.unknown,
 
                   _draft: {
                     date,
                     category: String(row.category).trim(),
                     amount,
                     statementRecord: row.statementrecord?.toString().trim() ?? "",
-                    statementType: row.statementtype ?? undefined,
+                    statementType:
+                      (statementDocumentOptions.find((option) => option.label === row.statementtype)
+                        ?.value as EStatementType) ?? EStatementType.unknown,
                   },
                   _editing: false,
                 };

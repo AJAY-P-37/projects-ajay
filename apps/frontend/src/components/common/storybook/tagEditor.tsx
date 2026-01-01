@@ -54,11 +54,8 @@ export const Tags = ({ tags = [], isRemovable = false, onRemove, setAddedTags }:
   return (
     <div className='flex flex-wrap items-center gap-2'>
       {tags.map((tag) => (
-        <span
-          key={tag}
-          className='flex items-center bg-sidebar-border text-secondary-foreground text-sm px-2 py-1 rounded-full'
-        >
-          {tag}
+        <span key={tag} className='flex items-center bg-sidebar-border rounded-full'>
+          <p className='px-2 py-1 text-secondary-foreground text-sm'>{tag}</p>
           {isRemovable && (
             <button
               type='button'
@@ -67,9 +64,9 @@ export const Tags = ({ tags = [], isRemovable = false, onRemove, setAddedTags }:
                 onRemove(updatedTags);
                 setAddedTags(updatedTags);
               }}
-              className='text-red-400 hover:text-destructive'
+              className='text-red-400 hover:text-destructive hover:bg-secondary rounded-r-full p-1 flex flex-1 items-center justify-center w-full h-full'
             >
-              <X className='h-3 w-3' />
+              <X className='h-4 w-4 my-1' />
             </button>
           )}
         </span>

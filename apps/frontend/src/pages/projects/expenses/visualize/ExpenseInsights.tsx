@@ -229,7 +229,7 @@ export const ExpenseInsights = () => {
               </div>
 
               {/* ---- CATEGORY COMPARISON ---- */}
-              <div className='grid grid-cols-1 xl:grid-cols-2 overflow-auto gap-6 border rounded-sm py-4'>
+              <div className='grid grid-cols-1 xl:grid-cols-2 overflow-auto scrollbar-thin gap-6 border rounded-sm py-4'>
                 <YearlyCategoryBreakdownBarChart
                   categoryColors={categoryColors}
                   categoryTotals={categoryTotals}

@@ -148,7 +148,7 @@ export class ExpensesService implements OnModuleInit {
         category,
         amount,
         statementRecord = "Manual",
-        statementType = "Unknown",
+        statementType = EStatementType.unknown,
       } = expense;
 
       const { value, error } = validateExpense(

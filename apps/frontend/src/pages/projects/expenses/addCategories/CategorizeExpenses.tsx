@@ -82,6 +82,10 @@ export function AddCategories() {
           editRow: true,
           deleteRow: true,
           copyTableToClipboard: true,
+          importColumnDetails: {
+            category: "Category of the expense in Text format",
+            keywords: "Keywords associated with the category in Comma separated format",
+          },
           importRows: (data: any[]) => {
             const categories: IExpensesCategory[] = [];
             for (const row of data) {

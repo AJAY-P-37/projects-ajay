@@ -109,7 +109,7 @@ export const getCellType = (
     case "input":
       return (
         <Input
-          placeholder={placeholder}
+          placeholder={placeholder || "Enter value"}
           value={value ?? ""}
           onChange={(e) => update(e.target.value)}
           className={cn(width, error && errorClassName)}
@@ -119,7 +119,7 @@ export const getCellType = (
     case "number":
       return (
         <Input
-          placeholder={placeholder}
+          placeholder={placeholder || "Enter number"}
           type='number'
           value={value}
           onChange={(e) => update(e.target.value ? Number(e.target.value) : e.target.value)}
@@ -181,6 +181,7 @@ export const getCellType = (
               selected={dateObj || undefined}
               onSelect={(v) => v && update(formatDate(v))}
               className='rounded'
+              captionLayout='dropdown'
             />
           </PopoverContent>
         </RadixPopover>

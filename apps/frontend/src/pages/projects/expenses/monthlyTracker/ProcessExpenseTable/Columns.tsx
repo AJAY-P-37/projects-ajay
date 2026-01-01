@@ -52,7 +52,9 @@ export const makeExpenseRowSchema = ({ categories, month, year }) =>
           return d.getMonth() === month && d.getFullYear() === year;
         },
         {
-          message: "Date outside selected month or year",
+          message: `Date outside selected month (${new Date(year, month).toLocaleString("en-US", {
+            month: "long",
+          })}) or year (${year})`,
         },
       ),
 

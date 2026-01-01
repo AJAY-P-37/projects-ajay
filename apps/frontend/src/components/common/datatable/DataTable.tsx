@@ -21,7 +21,7 @@ import {
 import { RowData } from "@tanstack/react-table";
 import { ZodSchema } from "zod";
 import { ResizeHandle, useColumnResize } from "./Resize";
-import { ActionsColumn, TableActions } from "./Actions";
+import { ActionsColumn, TableActions, TableActionsFooter } from "./Actions";
 import {
   collectAllErrors,
   getAccessorKey,
@@ -150,6 +150,18 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
 
   return (
     <div className='px-0 flex flex-col border border-secondary-foreground rounded'>
+      <TableActions
+        name={name}
+        columns={columns}
+        rows={rows}
+        setRows={setRows}
+        tableSchema={tableSchema}
+        actions={actions}
+        setErrors={setErrors}
+        createEmptyRow={createEmptyRow}
+        bottomRef={bottomRef}
+        rowRefs={rowRefs}
+      />
       <div className='w-full overflow-x-auto scrollbar-thin rounded h-[500px]'>
         <Table noWrapper className='min-w-max border-separate border-spacing-0'>
           <TableHeader className='sticky z-10 top-0 bg-muted'>
@@ -229,7 +241,7 @@ export function DataTable<TData extends BaseRow<TData>, TValue>({
         </Table>
         {/* {indicatorX !== null && <ResizeIndicator x={indicatorX} />} */}
       </div>
-      <TableActions
+      <TableActionsFooter
         name={name}
         columns={columns}
         rows={rows}
