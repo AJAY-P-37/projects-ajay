@@ -9,7 +9,6 @@ import {
   LabelList,
   CartesianGrid,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "shadcn-lib/dist/components/ui/card";
 
 /* ===========================
   MONTH BREAKDOWN TABLE
@@ -25,7 +24,7 @@ export const MonthlyBreakdownBarChart = ({
   categoryColors,
 }: MonthlyBreakdownChartProps) => {
   return (
-    <div className='min-w-[500px] h-[400px] p-2'>
+    <div className='min-w-[500px] h-[500px] p-2'>
       <ResponsiveContainer width='100%' height='100%'>
         <BarChart data={chartData} layout='vertical' margin={{ right: 80, left: 20 }}>
           {/* <CartesianGrid

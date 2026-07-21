@@ -19,7 +19,7 @@
     "src/index.d.ts"
   ],
   "scripts": {
-    "dev": "rm -rf node_modules dist && vite",
+    "dev": "rm -rf node_modules dist && vite --host",
     "build": "rm -rf dist && vite build",
     "build:prod": "rm -rf dist && vite build --mode production",
     "clean": "rm -rf node_modules dist",

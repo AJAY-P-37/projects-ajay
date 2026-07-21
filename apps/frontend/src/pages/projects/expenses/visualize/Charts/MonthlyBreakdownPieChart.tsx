@@ -56,7 +56,7 @@ export const MonthlyBreakdownPieChart = ({ chartConfig, chartData }) => {
   const totalAmount = chartData.reduce((sum, d) => sum + d.amount, 0);
 
   return (
-    <div className='min-w-[500px] h-[400px]'>
+    <div className='min-w-[500px] h-[500px]'>
       <ResponsiveContainer width='100%' height='100%'>
         <ChartContainer config={chartConfig} className='mx-auto aspect-square'>
           <PieChart>

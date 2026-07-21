@@ -55,7 +55,7 @@ export const YearlyBreakdownCategoryPieChart = ({ chartConfig, categoryTotals })
   const totalAmount = categoryTotals["Total"];
 
   return (
-    <div className='min-w-[500px] h-[400px]'>
+    <div className='min-w-[600px] h-[600px]'>
       <ResponsiveContainer width='100%' height='100%'>
         <ChartContainer config={chartConfig} className='mx-auto aspect-square'>
           <PieChart>

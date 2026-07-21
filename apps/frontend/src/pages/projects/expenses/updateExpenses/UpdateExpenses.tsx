@@ -209,7 +209,7 @@ export const UpdateExpenses = () => {
                   amount,
                   statementRecord: row.statementrecord?.toString().trim() ?? "",
                   statementType:
-                    (statementDocumentOptions.find((option) => option.label === row.statementtype)
+                    (statementDocumentOptions.find((option) => option.label === row.statementtype || option.value === row.statementtype)
                       ?.value as EStatementType) ?? EStatementType.unknown,
 
                   _draft: {
@@ -218,7 +218,7 @@ export const UpdateExpenses = () => {
                     amount,
                     statementRecord: row.statementrecord?.toString().trim() ?? "",
                     statementType:
-                      (statementDocumentOptions.find((option) => option.label === row.statementtype)
+                      (statementDocumentOptions.find((option) => option.label === row.statementtype || option.value === row.statementtype)
                         ?.value as EStatementType) ?? EStatementType.unknown,
                   },
                   _editing: false,

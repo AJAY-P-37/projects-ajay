@@ -30,7 +30,7 @@ export const YearlyCategoryBreakdownBarChart = ({
     .filter((cat) => cat.category !== "Total")
     .sort((a, b) => b.amount - a.amount);
   return (
-    <div className='min-w-[500px] h-[400px] p-2'>
+    <div className='min-w-[500px] h-[600px] p-2'>
       <ResponsiveContainer width='100%' height='100%'>
         <BarChart data={chartData} layout='vertical' margin={{ right: 80, left: 20 }}>
           {/* <CartesianGrid

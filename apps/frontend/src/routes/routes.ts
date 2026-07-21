@@ -9,6 +9,7 @@ import { MonthlyExpenses } from "@/pages/projects/expenses/monthlyTracker/Monthl
 import { AddCategories } from "@/pages/projects/expenses/addCategories/CategorizeExpenses";
 import { ExpenseInsights } from "@/pages/projects/expenses/visualize/ExpenseInsights";
 import { UpdateExpenses } from "@/pages/projects/expenses/updateExpenses/UpdateExpenses";
+import { WishPage } from "@/pages/wish";
 
 const Routes: RouteObject[] = [
   {
@@ -33,6 +34,10 @@ const Routes: RouteObject[] = [
       },
     ],
     errorElement: Error(),
+  },
+  {
+    path: "BirthdayWishesMyLove",
+    Component: WishPage,
   },
 ];
 
