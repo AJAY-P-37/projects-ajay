@@ -9,25 +9,36 @@ const clientOptions: ConnectOptions = {
 export class MongoDB {
   private static connections: Record<string, Connection> = {};
 
+  private resolveDbName(dbName: string): string {
+    const normalizedDbName = dbName.trim();
+
+    if (normalizedDbName.endsWith("_DEV") || normalizedDbName.endsWith("_PROD")) {
+      return normalizedDbName;
+    }
+
+    const env = (process.env.ENV || process.env.NODE_ENV || "DEV").toUpperCase();
+    return env === "PROD" || env === "PRODUCTION" ? `${normalizedDbName}_PROD` : `${normalizedDbName}_DEV`;
+  }
+
   public async connectMongoDB(dbName: string): Promise<Connection> {
-    const dbKey = `${dbName}_${process.env.ENV}`;
+    const resolvedDbName = this.resolveDbName(dbName);
 
     // ✅ return cached connection if available
-    if (MongoDB.connections[dbKey]) {
-      return MongoDB.connections[dbKey];
+    if (MongoDB.connections[resolvedDbName]) {
+      return MongoDB.connections[resolvedDbName];
     }
 
     try {
       const connection = mongoose.createConnection(uri, {
         ...clientOptions,
-        dbName: dbKey,
+        dbName: resolvedDbName,
       });
 
-      MongoDB.connections[dbKey] = connection;
-      console.log(`✅ Connected to MongoDB: ${dbKey}`);
+      MongoDB.connections[resolvedDbName] = connection;
+      console.log(`✅ Connected to MongoDB: ${resolvedDbName}`);
       return connection;
     } catch (error) {
-      console.error(`❌ Error while connecting to MongoDB ${dbKey}:`, error);
+      console.error(`❌ Error while connecting to MongoDB ${resolvedDbName}:`, error);
       throw error;
     }
   }

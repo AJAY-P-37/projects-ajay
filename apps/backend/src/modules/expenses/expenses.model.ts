@@ -23,9 +23,9 @@ const expenseSchema = new Schema<IExpenseDocument>(
 /** ============================
  *  MODEL INITIALIZATION
  *  ============================ */
-export const getExpenseModel = async (): Promise<Model<IExpenseDocument>> => {
+export const getExpenseModel = async (dbName: string = "transaction_db"): Promise<Model<IExpenseDocument>> => {
   const Mongo = new MongoDB();
-  const transaction_db: Connection = await Mongo.connectMongoDB("transaction_db");
+  const transaction_db: Connection = await Mongo.connectMongoDB(dbName);
   return transaction_db.model<IExpenseDocument>("expenses_new", expenseSchema);
 };
 

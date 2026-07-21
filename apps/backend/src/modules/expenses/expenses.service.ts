@@ -11,19 +11,50 @@ import {
 } from "../../common-types/types/expenses";
 import { StatementParsingService } from "./statements/statements.service";
 import { ICategoryDocument, getCategoryModel, validateCategory } from "./expensesCategories.model";
+import { shouldMirrorUser } from "../../mongo/mirror-users";
 
 @Injectable()
 export class ExpensesService implements OnModuleInit {
   private ExpensesModel!: Model<IExpenseDocument>;
   private ExpensesHistoryModel!: Model<IExpenseHistoryDocument>;
   private CategoriesModel!: Model<ICategoryDocument>;
+  private MirrorExpensesModel?: Model<IExpenseDocument>;
+  private MirrorExpensesHistoryModel?: Model<IExpenseHistoryDocument>;
+  private MirrorCategoriesModel?: Model<ICategoryDocument>;
 
   private statementService!: StatementParsingService;
+
+  private getMirrorDatabaseName(): string | null {
+    const env = (process.env.ENV || process.env.NODE_ENV || "DEV").toUpperCase();
+
+    if (env === "PROD" || env === "PRODUCTION") {
+      return "transaction_db_DEV";
+    }
+
+    if (env === "DEV" || env === "DEVELOPMENT" || env === "LOCAL") {
+      return "transaction_db_PROD";
+    }
+
+    return process.env.MIRROR_DATABASE_NAME || null;
+  }
+
+  private async initializeMirrorModels() {
+    const mirrorDbName = this.getMirrorDatabaseName();
+
+    if (!mirrorDbName) {
+      return;
+    }
+
+    this.MirrorExpensesModel = await getExpenseModel(mirrorDbName);
+    this.MirrorExpensesHistoryModel = await getExpenseHistoryModel(mirrorDbName);
+    this.MirrorCategoriesModel = await getCategoryModel(mirrorDbName);
+  }
 
   async onModuleInit() {
     this.ExpensesModel = await getExpenseModel();
     this.ExpensesHistoryModel = await getExpenseHistoryModel();
     this.CategoriesModel = await getCategoryModel();
+    await this.initializeMirrorModels();
     this.statementService = new StatementParsingService();
   }
 
@@ -137,8 +168,12 @@ export class ExpensesService implements OnModuleInit {
     const year = body.year;
 
     const { start, end } = this.getMonthRange(year, month);
+    const shouldMirror = shouldMirrorUser(userId);
 
     await this.ExpensesModel.deleteMany({ userId, date: { $gte: start, $lte: end } });
+    if (shouldMirror && this.MirrorExpensesModel) {
+      await this.MirrorExpensesModel.deleteMany({ userId, date: { $gte: start, $lte: end } });
+    }
 
     for (let index = 0; index < data.length; index++) {
       const expense = data[index];
@@ -173,6 +208,13 @@ export class ExpensesService implements OnModuleInit {
         userId,
       });
 
+      if (shouldMirror && this.MirrorExpensesModel) {
+        await this.MirrorExpensesModel.create({
+          ...value,
+          userId,
+        });
+      }
+
       await this.ExpensesHistoryModel.updateOne(
         { userId: value.userId, statementRecord: value.statementRecord },
         {
@@ -181,6 +223,17 @@ export class ExpensesService implements OnModuleInit {
         },
         { upsert: true },
       );
+
+      if (shouldMirror && this.MirrorExpensesHistoryModel) {
+        await this.MirrorExpensesHistoryModel.updateOne(
+          { userId: value.userId, statementRecord: value.statementRecord },
+          {
+            $addToSet: { category: value.category },
+            $setOnInsert: { statementType: value.statementType ?? "Unkown" },
+          },
+          { upsert: true },
+        );
+      }
     }
     const monthName = new Date(year, month).toLocaleString("en-US", {
       month: "long",
@@ -225,7 +278,11 @@ export class ExpensesService implements OnModuleInit {
 
   async saveCategories(body: any, userId: string) {
     try {
+      const shouldMirror = shouldMirrorUser(userId);
       await this.CategoriesModel.deleteMany({ userId });
+      if (shouldMirror && this.MirrorCategoriesModel) {
+        await this.MirrorCategoriesModel.deleteMany({ userId });
+      }
       await Promise.all(
         body.categories.map(async (eachCategory: any, index: number) => {
           const { category, keywords } = eachCategory;
@@ -243,6 +300,14 @@ export class ExpensesService implements OnModuleInit {
             keywords,
             userId,
           });
+
+          if (shouldMirror && this.MirrorCategoriesModel) {
+            await this.MirrorCategoriesModel.create({
+              category,
+              keywords,
+              userId,
+            });
+          }
         }),
       );
       return { message: "Saved Categories data" };

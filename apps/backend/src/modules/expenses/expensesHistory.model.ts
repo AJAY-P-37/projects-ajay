@@ -27,9 +27,9 @@ expenseHistorySchema.index({ userId: 1, statementRecord: 1 }, { unique: true });
 /** ============================
  *  MODEL INITIALIZATION
  *  ============================ */
-export const getExpenseHistoryModel = async (): Promise<Model<IExpenseHistoryDocument>> => {
+export const getExpenseHistoryModel = async (dbName: string = "transaction_db"): Promise<Model<IExpenseHistoryDocument>> => {
   const Mongo = new MongoDB();
-  const transaction_db: Connection = await Mongo.connectMongoDB("transaction_db");
+  const transaction_db: Connection = await Mongo.connectMongoDB(dbName);
   return transaction_db.model<IExpenseHistoryDocument>("expensesHistory_new", expenseHistorySchema);
 };
 

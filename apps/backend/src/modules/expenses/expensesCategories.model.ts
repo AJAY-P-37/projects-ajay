@@ -25,9 +25,9 @@ categorySchema.index({ userId: 1, category: 1 }, { unique: true });
 /** ============================
  *  MODEL INITIALIZATION
  *  ============================ */
-export const getCategoryModel = async (): Promise<Model<ICategoryDocument>> => {
+export const getCategoryModel = async (dbName: string = "transaction_db"): Promise<Model<ICategoryDocument>> => {
   const Mongo = new MongoDB();
-  const transaction_db: Connection = await Mongo.connectMongoDB("transaction_db");
+  const transaction_db: Connection = await Mongo.connectMongoDB(dbName);
   return transaction_db.model<ICategoryDocument>("categories_new", categorySchema);
 };
 
