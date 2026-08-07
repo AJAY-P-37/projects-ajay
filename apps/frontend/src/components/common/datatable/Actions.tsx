@@ -5,6 +5,7 @@ import {
   Check,
   CircleX,
   CopyIcon,
+  Download,
   EditIcon,
   LoaderCircle,
   PlusCircleIcon,
@@ -17,6 +18,7 @@ import { BaseRow, TableErrors } from "./DataTable";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
 import {
   collectAllErrors,
+  exportToExcel,
   getAccessorKey,
   parseExcel,
   validateAll,
@@ -41,6 +43,8 @@ export interface TableActions<TData> {
   temporarySave?: boolean;
   importColumnDetails?: Record<string, string>;
   importRows?: (data: TData[]) => TData[];
+  exportRows?: boolean | ((data: TData[]) => void);
+  exportFileName?: string;
   saveTable?: (data: TData[]) => Promise<any>;
 }
 interface ActionsColumnProps<TData extends BaseRow<TData>> {
@@ -220,9 +224,25 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
     validateAll(importRows, tableSchema, setErrors);
   };
 
+  const handleExportRows = () => {
+    if (!rows || rows.length === 0) {
+      Toast.warning("No rows available to export");
+      return;
+    }
+    if (typeof actions.exportRows === "function") {
+      actions.exportRows(rows);
+      return;
+    }
+    const fileName = actions.exportFileName || `${name || "expenses"}-export.xlsx`;
+    exportToExcel(columns, rows, fileName);
+    Toast.success(`Exported ${rows.length} rows to ${fileName}`);
+  };
+
   return actions.addRow ||
     actions.copyTableToClipboard ||
     actions.temporarySave ||
+    actions.importRows ||
+    actions.exportRows ||
     actions.saveTable ? (
     <div className='flex justify-between m-3'>
       <div className='flex gap-2'>
@@ -269,6 +289,20 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
                 accept={`.${["xlsx", "xls"].join(",.")}`}
                 onChange={importRows}
               />
+            </Button>
+          </Popover>
+        )}
+        {actions.exportRows && (
+          <Popover content='Export table to Excel file'>
+            <Button
+              type='button'
+              size={size}
+              variant={variant}
+              onClick={handleExportRows}
+              className='flex items-center gap-2'
+            >
+              <Download className='w-4 h-4' />
+              Export
             </Button>
           </Popover>
         )}

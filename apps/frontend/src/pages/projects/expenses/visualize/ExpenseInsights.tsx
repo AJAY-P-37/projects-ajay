@@ -15,6 +15,7 @@ import { ChartConfig } from "shadcn-lib/dist/components/ui/chart";
 import { useIsMobile } from "shadcn-lib/dist/hooks/use-mobile";
 import { Amphora, Loader2 } from "lucide-react";
 import { YearlyTotalTrendAreaChart } from "./Charts/YearlyTotalTrendAreaChart";
+import { MultiYearOverview } from "./Charts/MultiYearOverview";
 // import { YearlyCategoryStackedBarChart } from "./Charts/YearlyCategoryStackedBarChart";
 import { MonthlyBreakdownBarChart } from "./Charts/MonthlyBreakdownBarChart";
 import { FormSelect } from "@/components/common/storybook/select";
@@ -125,10 +126,15 @@ export const ExpenseInsights = () => {
     month: string;
     Total: number;
     TotalExcludingInvestment: number;
+    Investment?: number;
+    Insurance?: number;
+    [key: string]: any;
   }
 
   const yearlyData: YearlyData[] = monthsAvailable.map((m) => {
     const total = m.data.find((d) => d.category === "Total")?.amount || 0;
+    const investment = m.data.find((d) => d.category === "Investment")?.amount || 0;
+    const insurance = m.data.find((d) => d.category === "Insurance")?.amount || 0;
 
     return {
       month: m.month,
@@ -136,8 +142,9 @@ export const ExpenseInsights = () => {
       ...Object.fromEntries(
         m.data.filter((d) => d.category !== "Total").map((d) => [d.category, d.amount]),
       ),
-      TotalExcludingInvestment:
-        total - (m.data.find((d) => d.category === "Investment")?.amount || 0),
+      TotalExcludingInvestment: total - (investment + insurance),
+      Investment: investment,
+      Insurance: insurance,
     };
   });
 
@@ -180,6 +187,9 @@ export const ExpenseInsights = () => {
 
   return (
     <div className='space-y-10'>
+      {/* ===================== MULTI-YEAR TREND ===================== */}
+      <MultiYearOverview />
+
       {/* ===================== YEARLY OVERVIEW ===================== */}
       <Card className='border-0'>
         <CardHeader className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>

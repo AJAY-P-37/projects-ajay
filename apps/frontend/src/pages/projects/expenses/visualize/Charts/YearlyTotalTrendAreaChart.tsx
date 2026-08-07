@@ -21,24 +21,27 @@ export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
     // { label: "Total", key: "Total" },
     { label: "Total Expense", key: "TotalExcludingInvestment" },
     { label: "Total Investment", key: "Investment" },
+    { label: "Total Insurance", key: "Insurance" },
   ];
   const categoryTotals: Record<string, number> = {
     Total: 0,
     TotalExcludingInvestment: 0,
     Investment: 0,
+    Insurance: 0,
   };
 
   yearlyData.forEach((row) => {
     // categoryTotals.Total += row.Total || 0;
     categoryTotals.TotalExcludingInvestment += row.TotalExcludingInvestment || 0;
     categoryTotals.Investment += row.Investment || 0;
+    categoryTotals.Insurance += row.Insurance || 0;
   });
   return (
     <Card className='py-0'>
       <CardHeader className='flex flex-col items-stretch border-b !p-0 sm:flex-row'>
         <div className='flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3'>
           <CardTitle>Yearly Trend</CardTitle>
-          <CardDescription>Expense vs Investment</CardDescription>
+          <CardDescription>Expense vs Investment vs Insurance</CardDescription>
         </div>
         {trends.map((trend) => (
           <div className='flex overflow-x-auto' key={trend.key}>
@@ -73,6 +76,14 @@ export const YearlyTotalTrendAreaChart = ({ chartConfig, yearlyData }) => {
                 fill='var(--chart-2)'
                 fillOpacity={0.3}
                 name='Total Investment'
+              />
+              <Area
+                type='monotone'
+                dataKey='Insurance'
+                stroke='var(--chart-3)'
+                fill='var(--chart-3)'
+                fillOpacity={0.3}
+                name='Total Insurance'
               />
               <Area
                 type='monotone'

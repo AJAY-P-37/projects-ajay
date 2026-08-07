@@ -71,6 +71,35 @@ export const getAccessorKey = (col: ColumnDef<any>): string | null => {
   return null;
 };
 
+export const exportToExcel = <TData>(
+  columns: ColumnDef<TData, any>[],
+  rows: TData[],
+  fileName = "expenses-export.xlsx",
+) => {
+  const keys = columns.map((col) => getAccessorKey(col)).filter(Boolean) as string[];
+
+  const cleanRows = rows.map((row) => {
+    const obj: Record<string, any> = {};
+    if (keys.length > 0) {
+      keys.forEach((key) => {
+        obj[key] = (row as any)[key] ?? "";
+      });
+    } else {
+      Object.keys(row as any).forEach((k) => {
+        if (!k.startsWith("_") && k !== "id") {
+          obj[k] = (row as any)[k];
+        }
+      });
+    }
+    return obj;
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(cleanRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+  XLSX.writeFile(workbook, fileName);
+};
+
 export const highlightRow = (
   rowId: string,
   rowRefs: RefObject<Record<string, HTMLTableRowElement>>,

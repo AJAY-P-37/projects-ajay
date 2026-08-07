@@ -24,9 +24,14 @@ const cards = [
     path: "/projects/expenses/expenseInsights",
   },
   {
-    title: "3. Update Expense",
+    title: "4. Update Expense",
     description: "Add or Update existing expense if you missed any",
     path: "/projects/expenses/updateExpense",
+  },
+  {
+    title: "5. Export & Import Expenses",
+    description: "Export full or range-filtered data and bulk import expenses via Excel",
+    path: "/projects/expenses/exportImport",
   },
 ];
 

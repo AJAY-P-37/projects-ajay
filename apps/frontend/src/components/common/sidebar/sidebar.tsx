@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   CalendarArrowUp,
   ChartBarStacked,
+  Download,
   Frame,
   GalleryVerticalEnd,
   IndianRupee,
@@ -64,6 +65,11 @@ const data = {
           title: "Update expense",
           url: "/projects/expenses/updateExpense",
           icon: Pencil,
+        },
+        {
+          title: "Export and Import",
+          url: "/projects/expenses/exportImport",
+          icon: Download,
         },
       ],
     },

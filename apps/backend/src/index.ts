@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 
 const server = express();
 
-const allowedOrigins = ["http://localhost:5000", "https://projects-ajay.web.app"];
+const allowedOrigins = ["http://localhost:3000", "https://projects-ajay.web.app"];
 // ✅ Global CORS middleware for all routes (including OPTIONS)
 server.use((req, res, next) => {
   const origin = req.headers.origin;

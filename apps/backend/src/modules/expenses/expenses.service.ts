@@ -121,20 +121,27 @@ export class ExpensesService implements OnModuleInit {
 
     const { start, end } = this.getMonthRange(year, month);
 
+    this.ExpensesModel = await getExpenseModel();
+    this.CategoriesModel = await getCategoryModel();
+
     const monthlyExpenses = await this.ExpensesModel.find({
       userId,
       date: { $gte: start, $lte: end },
     });
 
+    const configuredCategories = (await this.CategoriesModel.find({ userId }))
+      .map((c) => c.category)
+      .filter(Boolean);
+    const actualCategories = monthlyExpenses.map((e) => e.category).filter(Boolean);
+    const categories = Array.from(new Set([...configuredCategories, ...actualCategories])).sort();
+
     const consolidatedData: Record<string, number> = {};
-
-    const categories = (await this.CategoriesModel.find({ userId })).map((c) => c.category).sort();
-
     categories.forEach((cat) => (consolidatedData[cat] = 0));
 
     // Aggregate expenses
     monthlyExpenses.forEach(({ category, amount }) => {
-      const roundedAmount = roundOff(Number(amount));
+      if (!category) return;
+      const roundedAmount = roundOff(Number(amount || 0));
       consolidatedData[category] = roundOff((consolidatedData[category] || 0) + roundedAmount);
     });
 
@@ -145,9 +152,9 @@ export class ExpensesService implements OnModuleInit {
     categories.forEach((category) => {
       finalData.push({
         category: category,
-        amount: consolidatedData[category],
+        amount: consolidatedData[category] || 0,
       });
-      total += consolidatedData[category];
+      total += consolidatedData[category] || 0;
     });
 
     // Append Total
@@ -262,6 +269,105 @@ export class ExpensesService implements OnModuleInit {
     });
   }
 
+  async getExpenseDataByRange(
+    body: { startYear?: number; startMonth?: number; endYear?: number; endMonth?: number; allData?: boolean },
+    userId: string,
+  ) {
+    this.ExpensesModel = await getExpenseModel();
+    const { startYear, startMonth, endYear, endMonth, allData } = body;
+
+    let query: any = { userId };
+
+    if (!allData && startYear && endYear && startMonth !== undefined && endMonth !== undefined) {
+      const start = new Date(startYear, startMonth, 1);
+      const end = new Date(endYear, endMonth + 1, 0, 23, 59, 59, 999);
+      query.date = { $gte: start, $lte: end };
+    }
+
+    const expenses = await this.ExpensesModel.find(query).sort({ date: -1 });
+
+    return expenses.map((x) => {
+      const d = new Date(x.date);
+      const dateStr = !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : x.date;
+      return {
+        id: (x as any)._id?.toString() || crypto.randomUUID(),
+        date: dateStr,
+        category: x.category,
+        amount: x.amount,
+        statementRecord: x.statementRecord,
+        statementType: x.statementType,
+      };
+    });
+  }
+
+  async saveBulkExpenseData(body: { expenseData: any[] }, userId: string) {
+    const { expenseData } = body;
+    this.ExpensesModel = await getExpenseModel();
+    this.ExpensesHistoryModel = await getExpenseHistoryModel();
+    await this.initializeMirrorModels();
+    const shouldMirror = shouldMirrorUser(userId);
+
+    let savedCount = 0;
+    for (const expense of expenseData) {
+      const {
+        date,
+        category,
+        amount,
+        statementRecord = "Manual",
+        statementType = EStatementType.unknown,
+      } = expense;
+
+      if (!date || !category || amount === undefined) {
+        continue;
+      }
+
+      const parsedDate = new Date(date);
+
+      await this.ExpensesModel.create({
+        date: isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
+        category,
+        amount: Number(amount),
+        statementRecord,
+        statementType,
+        userId,
+      });
+
+      if (shouldMirror && this.MirrorExpensesModel) {
+        await this.MirrorExpensesModel.create({
+          date: isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
+          category,
+          amount: Number(amount),
+          statementRecord,
+          statementType,
+          userId,
+        });
+      }
+
+      await this.ExpensesHistoryModel.updateOne(
+        { userId, statementRecord },
+        {
+          $addToSet: { category },
+          $setOnInsert: { statementType: statementType ?? "Unknown" },
+        },
+        { upsert: true },
+      );
+
+      if (shouldMirror && this.MirrorExpensesHistoryModel) {
+        await this.MirrorExpensesHistoryModel.updateOne(
+          { userId, statementRecord },
+          {
+            $addToSet: { category },
+            $setOnInsert: { statementType: statementType ?? "Unknown" },
+          },
+          { upsert: true },
+        );
+      }
+      savedCount++;
+    }
+
+    return { message: `Successfully saved ${savedCount} expense records` };
+  }
+
   /** ---------------------------------------------------
    * 🔹 FETCH EXPENSE HISTORY
    * --------------------------------------------------- */
@@ -323,9 +429,12 @@ export class ExpensesService implements OnModuleInit {
     const round = (v: number) =>
       Math.round((parseFloat(v.toString()) + Number.EPSILON) * 100) / 100;
 
-    // Get date range for entire year
-    const start = new Date(year, 0, 1); // Jan 1
-    const end = new Date(year, 11, 31, 23, 59); // Dec 31 (end of day)
+    this.ExpensesModel = await getExpenseModel();
+    this.CategoriesModel = await getCategoryModel();
+
+    // Get UTC date range for entire year
+    const start = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
 
     // Fetch all expenses for year
     const expenses = await this.ExpensesModel.find({
@@ -333,8 +442,12 @@ export class ExpensesService implements OnModuleInit {
       date: { $gte: start, $lte: end },
     });
 
-    // Fetch all categories
-    const categories = (await this.CategoriesModel.find({ userId })).map((c) => c.category).sort();
+    // Collect all categories (configured + actual)
+    const configuredCategories = (await this.CategoriesModel.find({ userId }))
+      .map((c) => c.category)
+      .filter(Boolean);
+    const actualCategories = expenses.map((e) => e.category).filter(Boolean);
+    const categories = Array.from(new Set([...configuredCategories, ...actualCategories])).sort();
 
     // Prepare consolidation store
     const consolidated: Record<string, number> = {};
@@ -342,7 +455,8 @@ export class ExpensesService implements OnModuleInit {
 
     // Aggregate sums
     expenses.forEach(({ category, amount }) => {
-      const val = round(Number(amount));
+      if (!category) return;
+      const val = round(Number(amount || 0));
       consolidated[category] = round((consolidated[category] || 0) + val);
     });
 
@@ -353,9 +467,9 @@ export class ExpensesService implements OnModuleInit {
     for (const cat of categories) {
       final.push({
         category: cat,
-        amount: consolidated[cat],
+        amount: consolidated[cat] || 0,
       });
-      total += consolidated[cat];
+      total += consolidated[cat] || 0;
     }
 
     final.push({
@@ -370,26 +484,45 @@ export class ExpensesService implements OnModuleInit {
     const roundOff = (val: number): number =>
       Math.round((parseFloat(val.toString()) + Number.EPSILON) * 100) / 100;
 
+    this.ExpensesModel = await getExpenseModel();
+    this.CategoriesModel = await getCategoryModel();
+
+    const start = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
+
     // Get all expenses for this user in the given year
     const yearlyExpenses = await this.ExpensesModel.find({
       userId,
       date: {
-        $gte: new Date(year, 0, 1),
-        $lte: new Date(year, 11, 31, 23, 59, 59),
+        $gte: start,
+        $lte: end,
       },
     });
 
-    // Get all categories
-    const categories = (await this.CategoriesModel.find({ userId })).map((c) => c.category).sort();
+    // Collect all categories (configured + actual)
+    const configuredCategories = (await this.CategoriesModel.find({ userId }))
+      .map((c) => c.category)
+      .filter(Boolean);
+    const actualCategories = yearlyExpenses.map((e) => e.category).filter(Boolean);
+    const categories = Array.from(new Set([...configuredCategories, ...actualCategories])).sort();
 
-    // Prepare output structure
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
     // For each month → map category → amount
     const monthlyData: Record<string, Record<string, number>> = {};
-
-    const months = Array.from({ length: 12 }, (_, i) => {
-      const date = new Date(year, i, 1);
-      return date.toLocaleString("default", { month: "long" });
-    });
 
     for (const month of months) {
       monthlyData[month] = {};
@@ -398,12 +531,14 @@ export class ExpensesService implements OnModuleInit {
 
     // Aggregate expenses
     yearlyExpenses.forEach((exp) => {
-      const month = months[exp?.date?.getMonth()];
+      if (!exp?.date) return;
+      const d = new Date(exp.date);
+      if (isNaN(d.getTime())) return;
+      const month = months[d.getUTCMonth()];
       const cat = exp?.category;
-      const amt = roundOff(Number(exp?.amount));
+      const amt = roundOff(Number(exp?.amount || 0));
 
-      // Ensure it's a known category
-      if (monthlyData?.[month]?.[cat] !== undefined) {
+      if (month && cat && monthlyData[month] && monthlyData[month][cat] !== undefined) {
         monthlyData[month][cat] = roundOff(monthlyData[month][cat] + amt);
       }
     });
@@ -413,11 +548,10 @@ export class ExpensesService implements OnModuleInit {
 
     for (const month of months) {
       const monthEntry = [];
-
       let total = 0;
 
       categories.forEach((cat) => {
-        const amount = monthlyData[month][cat];
+        const amount = monthlyData[month][cat] || 0;
         total += amount;
 
         monthEntry.push({

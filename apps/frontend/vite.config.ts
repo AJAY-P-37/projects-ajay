@@ -9,7 +9,7 @@ export default defineConfig((({ mode }) => {
     plugins: [react()],
     server: {
       open: true,
-      port: 5000,
+      port: 3000,
       // proxy: {
       //   "/api": {
       //     target: "http://127.0.0.1:5001/projects-ajay/asia-south1",

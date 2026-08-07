@@ -68,4 +68,29 @@ export default class ExpensesService {
 
     return data;
   };
+
+  public getExpenseDataByRange = async (params: {
+    startYear?: number;
+    startMonth?: number;
+    endYear?: number;
+    endMonth?: number;
+    allData?: boolean;
+  }) => {
+    const query = new URLSearchParams();
+    if (params.allData) query.append("allData", "true");
+    if (params.startYear !== undefined) query.append("startYear", String(params.startYear));
+    if (params.startMonth !== undefined) query.append("startMonth", String(params.startMonth));
+    if (params.endYear !== undefined) query.append("endYear", String(params.endYear));
+    if (params.endMonth !== undefined) query.append("endMonth", String(params.endMonth));
+
+    const { data } = await api.get(`${this.basePath}/getExpenseDataByRange?${query.toString()}`);
+    return data;
+  };
+
+  public saveBulkExpenseData = async (expenseData: any[]) => {
+    const { data } = await api.post(`${this.basePath}/saveBulkExpenseData`, {
+      expenseData,
+    });
+    return data;
+  };
 }

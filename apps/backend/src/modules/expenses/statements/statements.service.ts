@@ -16,14 +16,17 @@ import { getExpenseHistoryModel, IExpenseHistoryDocument } from "../expensesHist
 import { Model } from "mongoose";
 import { HDFCCreditParser } from "./parsers/HDFCCreditParser";
 import { getCategoryModel, ICategoryDocument } from "../expensesCategories.model";
+import { AICategoryService } from "./ai.service";
 
 export class StatementParsingService {
   private firebaseService;
   private ExpensesHistoryModel!: Model<IExpenseHistoryDocument>;
   private ExpensesCategoriesModel!: Model<ICategoryDocument>;
+  private aiService: AICategoryService;
 
   constructor() {
     this.firebaseService = new FirebaseService();
+    this.aiService = new AICategoryService();
   }
 
   /* ------------------------------------------------------------
@@ -53,66 +56,111 @@ export class StatementParsingService {
    * ✅ CATEGORY HELPERS
    * ------------------------------------------------------------ */
   public mapcategoryWithKeyword = async (comment: string, userId: string) => {
+    if (!comment || !comment.trim()) {
+      return { categoryWithKeyword: null, categoryMatchedWithKeyword: false };
+    }
+
+    const trimmedComment = comment.trim();
+    const commentLower = trimmedComment.toLowerCase();
+
     this.ExpensesCategoriesModel = await getCategoryModel();
 
-    const categories = (await this.ExpensesCategoriesModel.find({ userId })).map((x) => ({
+    const userCategories = (await this.ExpensesCategoriesModel.find({ userId })).map((x) => ({
       category: x.category,
-      keywords: x.keywords,
+      keywords: x.keywords || [],
     }));
 
-    const matchedKeywords: string[] = [];
-    for (const { category, keywords } of categories) {
+    const systemKeywordsMap: Record<string, string[]> = {
+      "Self Transfer": ["Self", "Self Transfer"],
+      Split: ["Split"],
+    };
+
+    // 1️⃣ Exact match pass: User Categories
+    for (const { category, keywords } of userCategories) {
+      if (category.toLowerCase() === commentLower) {
+        return {
+          categoryWithKeyword: category,
+          categoryMatchedWithKeyword: true,
+        };
+      }
       for (const keyword of keywords) {
-        if (
-          keyword.toLowerCase() === comment.toLowerCase() ||
-          category.toLowerCase() === comment.toLowerCase()
-        ) {
+        if (keyword.toLowerCase() === commentLower) {
           return {
             categoryWithKeyword: category,
             categoryMatchedWithKeyword: true,
           };
         }
-        if (
-          keyword.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase() ||
-          category.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()
-        ) {
-          matchedKeywords.push(category);
-          break;
-        }
       }
     }
 
-    if (matchedKeywords.length > 0) {
-      return {
-        categoryWithKeyword: matchedKeywords.join(" / ").trim(),
-        categoryMatchedWithKeyword: true,
-      };
-    }
-
-    const matchedKeywordsWithComments: string[] = [];
-    const keywordsMap: Record<string, string[]> = {
-      "Self Transfer": ["Self"],
-      Split: ["Split"],
-    };
-
-    for (const keywords of Object.keys(keywordsMap)) {
+    // 2️⃣ Exact match pass: System Keywords Map
+    for (const [sysCategory, keywords] of Object.entries(systemKeywordsMap)) {
+      if (sysCategory.toLowerCase() === commentLower) {
+        return {
+          categoryWithKeyword: sysCategory,
+          categoryMatchedWithKeyword: true,
+        };
+      }
       for (const keyword of keywords) {
-        if (keyword.toLowerCase() === comment.toLowerCase()) {
+        if (keyword.toLowerCase() === commentLower) {
           return {
-            categoryWithKeyword: keywords,
+            categoryWithKeyword: sysCategory,
             categoryMatchedWithKeyword: true,
           };
         }
-        if (keywords.substring(0, 3).toLowerCase() === comment.substring(0, 3).toLowerCase()) {
-          matchedKeywordsWithComments.push(keywords);
-          break;
+      }
+    }
+
+    // 3️⃣ Partial match pass: Collect matching categories
+    const matchedCategories = new Set<string>();
+
+    if (commentLower.length >= 3) {
+      const commentPrefix = commentLower.substring(0, 3);
+
+      for (const { category, keywords } of userCategories) {
+        const catPrefix = category.toLowerCase().substring(0, 3);
+        if (catPrefix === commentPrefix) {
+          matchedCategories.add(category);
+          continue;
+        }
+
+        for (const keyword of keywords) {
+          const kwPrefix = keyword.toLowerCase().substring(0, 3);
+          if (kwPrefix === commentPrefix) {
+            matchedCategories.add(category);
+            break;
+          }
+        }
+      }
+
+      for (const [sysCategory, keywords] of Object.entries(systemKeywordsMap)) {
+        const sysCatPrefix = sysCategory.toLowerCase().substring(0, 3);
+        if (sysCatPrefix === commentPrefix) {
+          matchedCategories.add(sysCategory);
+          continue;
+        }
+
+        for (const keyword of keywords) {
+          const kwPrefix = keyword.toLowerCase().substring(0, 3);
+          if (kwPrefix === commentPrefix) {
+            matchedCategories.add(sysCategory);
+            break;
+          }
         }
       }
     }
 
-    if (matchedKeywordsWithComments.length > 0) {
+    // 4️⃣ Return partial matches combined with original comment text
+    if (matchedCategories.size > 0) {
+      const resultList = Array.from(matchedCategories);
+      const isCommentAlreadyIncluded = resultList.some((cat) => cat.toLowerCase() === commentLower);
+
+      if (!isCommentAlreadyIncluded) {
+        resultList.push(trimmedComment);
+      }
+
       return {
-        categoryWithKeyword: matchedKeywordsWithComments.join(" / ").trim(),
+        categoryWithKeyword: resultList.join(" / ").trim(),
         categoryMatchedWithKeyword: true,
       };
     }
@@ -137,6 +185,26 @@ export class StatementParsingService {
     };
   }
 
+  private async suggestCategoryWithAI(
+    comment: string,
+    statementRecord: string,
+    userId: string,
+  ): Promise<string> {
+    try {
+      this.ExpensesCategoriesModel = await getCategoryModel();
+      const categories = (await this.ExpensesCategoriesModel.find({ userId })).map(
+        (x) => x.category,
+      );
+      if (categories.length === 0) return "Unknown";
+
+      const suggested = await this.aiService.suggestCategory(comment, statementRecord, categories);
+      return suggested !== "Unknown" ? `AI: ${suggested}` : "AI: Unknown";
+    } catch (e) {
+      console.error("suggestCategoryWithAI failure:", e);
+      return "Unknown";
+    }
+  }
+
   private async mapCategory(
     comment: string,
     statementRecord: string,
@@ -154,7 +222,7 @@ export class StatementParsingService {
 
     if (categoryMatchedWithStatementRecord) return categoryWithStatementRecord;
 
-    return "Unknown";
+    return this.suggestCategoryWithAI(comment, statementRecord, userId);
   }
 
   private processStatementFile = async (
@@ -224,14 +292,17 @@ export class StatementParsingService {
 
               // ✅ Case 2: Other transaction descriptions
               else {
-                const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
-                  description,
-                  userId,
-                );
+                const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
+                  await this.mapCategoryWithStatementRecord(description, userId);
+
+                let category = categoryWithStatementRecord;
+                if (!categoryMatchedWithStatementRecord) {
+                  category = await this.suggestCategoryWithAI("", description, userId);
+                }
 
                 fileData.push({
                   date: txnDate,
-                  category: categoryWithStatementRecord,
+                  category: category,
                   amount: debitAmount,
                   statementRecord: description,
                   statementType: EStatementType.sbiDebit,
@@ -298,14 +369,17 @@ export class StatementParsingService {
 
                 // ✅ Case 2: Other transaction descriptions
               } else {
-                const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
-                  description,
-                  userId,
-                );
+                const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
+                  await this.mapCategoryWithStatementRecord(description, userId);
+
+                let category = categoryWithStatementRecord;
+                if (!categoryMatchedWithStatementRecord) {
+                  category = await this.suggestCategoryWithAI("", description, userId);
+                }
 
                 fileData.push({
                   date: row.txnDate,
-                  category: categoryWithStatementRecord,
+                  category,
                   amount: row.debitAmount,
                   statementRecord: description,
                   statementType: EStatementType.hdfcDebit,
@@ -356,14 +430,17 @@ export class StatementParsingService {
               // ✅ Case 1: Fallback classification via full text match
               // ---------------------------------------------------------
 
-              const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
-                description,
-                userId,
-              );
+              const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
+                await this.mapCategoryWithStatementRecord(description, userId);
+
+              let category = categoryWithStatementRecord;
+              if (!categoryMatchedWithStatementRecord) {
+                category = await this.suggestCategoryWithAI("", description, userId);
+              }
 
               fileData.push({
                 date: txnDate,
-                category: categoryWithStatementRecord,
+                category,
                 amount: debitAmount,
                 statementRecord: description,
                 statementType: EStatementType.hdfcCredit,

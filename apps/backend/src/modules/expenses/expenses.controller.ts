@@ -60,6 +60,39 @@ export class ExpensesController {
     return res.status(200).json(result);
   }
 
+  @Get("getExpenseDataByRange")
+  async getExpenseDataByRange(
+    @User("uid") userId: string,
+    @Query("startYear") startYear: string,
+    @Query("startMonth") startMonth: string,
+    @Query("endYear") endYear: string,
+    @Query("endMonth") endMonth: string,
+    @Query("allData") allData: string,
+    @Res() res: Response,
+  ) {
+    const result = await this.expensesService.getExpenseDataByRange(
+      {
+        startYear: startYear ? Number(startYear) : undefined,
+        startMonth: startMonth !== undefined && startMonth !== "" ? Number(startMonth) : undefined,
+        endYear: endYear ? Number(endYear) : undefined,
+        endMonth: endMonth !== undefined && endMonth !== "" ? Number(endMonth) : undefined,
+        allData: allData === "true",
+      },
+      userId,
+    );
+    return res.status(200).json(result);
+  }
+
+  @Post("saveBulkExpenseData")
+  async saveBulkExpenseData(
+    @User("uid") userId: string,
+    @Body() body: any,
+    @Res() res: Response,
+  ) {
+    const result = await this.expensesService.saveBulkExpenseData(body, userId);
+    return res.status(200).json(result);
+  }
+
   @Get("getMonthlyExpensesPivotTable")
   async getMonthlyExpensesPivotTable(
     @User("uid") userId: string,
