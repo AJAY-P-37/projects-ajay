@@ -1,5 +1,7 @@
 import axios from "axios";
 import {
+  AICategorizedExpenseResult,
+  AICategorizeExpenseItem,
   EStatementType,
   IProcessExpenseFileRequest,
   ProcessedExpense,
@@ -185,28 +187,28 @@ export class StatementParsingService {
     };
   }
 
-  private async suggestCategoryWithAI(
-    comment: string,
-    statementRecord: string,
+  public async categorizeExpensesWithAI(
+    items: AICategorizeExpenseItem[],
     userId: string,
-  ): Promise<string> {
-    if (process.env.ENABLE_AI_CATEGORIZATION !== "true") {
-      return "Unknown";
+  ): Promise<AICategorizedExpenseResult[]> {
+    if (!items || items.length === 0) {
+      return [];
     }
 
-    try {
-      this.ExpensesCategoriesModel = await getCategoryModel();
-      const categories = (await this.ExpensesCategoriesModel.find({ userId })).map(
-        (x) => x.category,
-      );
-      if (categories.length === 0) return "Unknown";
+    this.ExpensesCategoriesModel = await getCategoryModel();
+    const categories = (await this.ExpensesCategoriesModel.find({ userId }))
+      .map((x) => x.category)
+      .filter(Boolean);
 
-      const suggested = await this.aiService.suggestCategory(comment, statementRecord, categories);
-      return suggested !== "Unknown" ? `AI: ${suggested}` : "AI: Unknown";
-    } catch (e) {
-      console.error("suggestCategoryWithAI failure:", e);
-      return "Unknown";
+    if (categories.length === 0) {
+      return items.map((item) => ({ id: item.id, category: "Unknown" }));
     }
+
+    const suggestedCategories = await this.aiService.suggestCategoriesBatch(items, categories);
+    return items.map((item, idx) => ({
+      id: item.id,
+      category: suggestedCategories[idx] || "Unknown",
+    }));
   }
 
   private async mapCategory(
@@ -226,7 +228,7 @@ export class StatementParsingService {
 
     if (categoryMatchedWithStatementRecord) return categoryWithStatementRecord;
 
-    return this.suggestCategoryWithAI(comment, statementRecord, userId);
+    return "Unknown";
   }
 
   private processStatementFile = async (
@@ -296,17 +298,14 @@ export class StatementParsingService {
 
               // ✅ Case 2: Other transaction descriptions
               else {
-                const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
-                  await this.mapCategoryWithStatementRecord(description, userId);
-
-                let category = categoryWithStatementRecord;
-                if (!categoryMatchedWithStatementRecord) {
-                  category = await this.suggestCategoryWithAI("", description, userId);
-                }
+                const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
+                  description,
+                  userId,
+                );
 
                 fileData.push({
                   date: txnDate,
-                  category: category,
+                  category: categoryWithStatementRecord,
                   amount: debitAmount,
                   statementRecord: description,
                   statementType: EStatementType.sbiDebit,
@@ -373,17 +372,14 @@ export class StatementParsingService {
 
                 // ✅ Case 2: Other transaction descriptions
               } else {
-                const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
-                  await this.mapCategoryWithStatementRecord(description, userId);
-
-                let category = categoryWithStatementRecord;
-                if (!categoryMatchedWithStatementRecord) {
-                  category = await this.suggestCategoryWithAI("", description, userId);
-                }
+                const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
+                  description,
+                  userId,
+                );
 
                 fileData.push({
                   date: row.txnDate,
-                  category,
+                  category: categoryWithStatementRecord,
                   amount: row.debitAmount,
                   statementRecord: description,
                   statementType: EStatementType.hdfcDebit,
@@ -434,17 +430,14 @@ export class StatementParsingService {
               // ✅ Case 1: Fallback classification via full text match
               // ---------------------------------------------------------
 
-              const { categoryWithStatementRecord, categoryMatchedWithStatementRecord } =
-                await this.mapCategoryWithStatementRecord(description, userId);
-
-              let category = categoryWithStatementRecord;
-              if (!categoryMatchedWithStatementRecord) {
-                category = await this.suggestCategoryWithAI("", description, userId);
-              }
+              const { categoryWithStatementRecord } = await this.mapCategoryWithStatementRecord(
+                description,
+                userId,
+              );
 
               fileData.push({
                 date: txnDate,
-                category,
+                category: categoryWithStatementRecord,
                 amount: debitAmount,
                 statementRecord: description,
                 statementType: EStatementType.hdfcCredit,

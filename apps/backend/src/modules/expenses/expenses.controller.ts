@@ -13,7 +13,10 @@ import {
 import { ExpensesService } from "./expenses.service";
 import { Response } from "express";
 import { User } from "../users/users.service";
-import { IExpensesCategory } from "../../common-types/types/expenses";
+import {
+  AICategorizeExpensesRequest,
+  IExpensesCategory,
+} from "../../common-types/types/expenses";
 
 @Controller("expenses")
 export class ExpensesController {
@@ -33,6 +36,30 @@ export class ExpensesController {
       return res.status(200).json(result);
     } catch (error) {
       throw new HttpException("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post("categorizeWithAI")
+  async categorizeWithAI(
+    @User("uid") userId: string,
+    @Body() body: AICategorizeExpensesRequest,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.expensesService.categorizeExpensesWithAI(body, userId);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      const status =
+        typeof error?.status === "number" && error.status >= 400 && error.status < 600
+          ? error.status
+          : 500;
+      return res.status(status).json({
+        results: [],
+        error: {
+          message: error?.message || "AI categorization failed",
+          code: error?.status ? String(error.status) : undefined,
+        },
+      });
     }
   }
 

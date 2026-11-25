@@ -35,6 +35,14 @@ import { Card } from "shadcn-lib/dist/components/ui/card";
 const size = "sm";
 const variant = "default";
 
+export interface TableHeaderActionContext<TData> {
+  rows: TData[];
+  latestRowsRef: React.RefObject<TData[]>;
+  setRows: React.Dispatch<React.SetStateAction<TData[]>>;
+  tableSchema: ZodSchema<TData>;
+  setErrors: React.Dispatch<React.SetStateAction<TableErrors>>;
+}
+
 export interface TableActions<TData> {
   addRow?: boolean;
   editRow?: boolean;
@@ -46,6 +54,7 @@ export interface TableActions<TData> {
   exportRows?: boolean | ((data: TData[]) => void);
   exportFileName?: string;
   saveTable?: (data: TData[]) => Promise<any>;
+  customHeaderActions?: (ctx: TableHeaderActionContext<TData>) => React.ReactNode;
 }
 interface ActionsColumnProps<TData extends BaseRow<TData>> {
   original: TData;
@@ -176,6 +185,8 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
   bottomRef,
 }: TableActionsProps<TData, TValue>) => {
   const inputRef = useRef(null);
+  const latestRowsRef = useRef(rows);
+  latestRowsRef.current = rows;
 
   enum ECopy {
     copy = "copy",
@@ -245,7 +256,8 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
     actions.temporarySave ||
     actions.importRows ||
     actions.exportRows ||
-    actions.saveTable ? (
+    actions.saveTable ||
+    actions.customHeaderActions ? (
     <div className='flex justify-between m-3'>
       <div className='flex gap-2'>
         {actions.addRow && (
@@ -350,6 +362,13 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
             </Button>
           </Popover>
         )}
+        {actions.customHeaderActions?.({
+          rows,
+          latestRowsRef,
+          setRows,
+          tableSchema,
+          setErrors,
+        })}
       </div>
     </div>
   ) : null;

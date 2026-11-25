@@ -5,6 +5,8 @@ import { z } from "zod";
 import { EditableCell } from "@/components/common/datatable/EditableCell";
 import { DataTableColumnHeader } from "@/components/common/datatable/Header";
 import { numberFilter } from "@/components/common/datatable/Filters";
+import { Popover } from "@/components/common/datatable/Popover";
+import { Sparkles } from "lucide-react";
 
 //
 // ----------------------------------------------------------
@@ -76,9 +78,14 @@ export const makeExpenseRowSchema = ({ categories, month, year }) =>
 //
 export const expenseColumns = ({
   categories,
+  aiCategorizedMap,
 }: {
   categories: string[];
+  aiCategorizedMap?: Record<string, string>;
 }): ColumnDef<ExpenseRow>[] => {
+  const isAiCategorized = (value: any, row: any) =>
+    Boolean(aiCategorizedMap && row?.id && aiCategorizedMap[row.id] === value);
+
   return [
     {
       accessorKey: "date",
@@ -151,6 +158,27 @@ export const expenseColumns = ({
           accessor='category'
           ui='select'
           options={categories}
+          renderView={(v, r) =>
+            isAiCategorized(v, r) ? (
+              <Popover content='Categorized with AI — please review'>
+                <span className='inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/30 text-xs font-medium max-w-full'>
+                  <Sparkles className='w-3.5 h-3.5 shrink-0' />
+                  <span className='truncate'>{v}</span>
+                </span>
+              </Popover>
+            ) : (
+              v
+            )
+          }
+          renderBadge={(v, r) =>
+            r?._editing && isAiCategorized(v, r) ? (
+              <Popover content='Categorized with AI'>
+                <div className='absolute -right-2 -top-2 cursor-pointer'>
+                  <Sparkles className='text-violet-500 w-3.5 h-3.5' />
+                </div>
+              </Popover>
+            ) : null
+          }
         />
       ),
     },

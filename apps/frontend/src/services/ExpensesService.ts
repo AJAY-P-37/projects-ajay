@@ -1,4 +1,9 @@
-import { IExpensesCategory, IProcessExpenseFileRequest } from "common-types/types/expenses";
+import {
+  AICategorizeExpenseItem,
+  AICategorizeExpensesResponse,
+  IExpensesCategory,
+  IProcessExpenseFileRequest,
+} from "common-types/types/expenses";
 import { api } from "./Service";
 import { Toast } from "shadcn-lib/dist/components/ui/sonner";
 
@@ -17,6 +22,15 @@ export default class ExpensesService {
       year,
       statementType,
       statementFilesMetadata,
+    });
+    return data;
+  };
+
+  public categorizeWithAI = async (
+    items: AICategorizeExpenseItem[],
+  ): Promise<AICategorizeExpensesResponse> => {
+    const { data } = await api.post(`${this.basePath}/categorizeWithAI`, {
+      items,
     });
     return data;
   };

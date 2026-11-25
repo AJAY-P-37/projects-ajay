@@ -31,7 +31,10 @@ interface EditableCellProps {
   options?: { label: string; value: string }[] | string[];
 
   // for formatting view mode
-  renderView?: (value: any) => React.ReactNode;
+  renderView?: (value: any, row?: any) => React.ReactNode;
+
+  // optional custom corner badge (e.g. when no validation error is present)
+  renderBadge?: (value: any, row?: any) => React.ReactNode;
 }
 
 export const EditableCell = ({
@@ -42,6 +45,7 @@ export const EditableCell = ({
   options = [],
   width = "w-full",
   renderView,
+  renderBadge,
 }: EditableCellProps) => {
   const r = row.original;
 
@@ -51,6 +55,7 @@ export const EditableCell = ({
 
   // Value: uses draft if editing
   const value = r._editing ? r._draft?.[accessor] : r[accessor];
+  const effectiveRow = r._editing ? { ...r, ...(r._draft || {}), id: r.id, _editing: true } : r;
 
   const update = (val: any) => {
     table.options.meta.updateCell(r.id, accessor as any, val);
@@ -67,7 +72,7 @@ export const EditableCell = ({
           error && "border border-input",
         )}
       >
-        {value === "" ? "\u00A0" : renderView ? renderView(value) : value}
+        {value === "" ? "\u00A0" : renderView ? renderView(value, effectiveRow) : value}
       </div>
     );
   } else {
@@ -91,6 +96,7 @@ export const EditableCell = ({
           </div>
         </Popover>
       )}
+      {!error && renderBadge?.(value, effectiveRow)}
     </div>
   );
 };

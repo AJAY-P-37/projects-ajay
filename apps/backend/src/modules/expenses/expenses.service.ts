@@ -3,6 +3,8 @@ import { getExpenseModel, IExpenseDocument, validateExpense } from "./expenses.m
 import { getExpenseHistoryModel, IExpenseHistoryDocument } from "./expensesHistory.model";
 import { Model } from "mongoose";
 import {
+  AICategorizeExpensesRequest,
+  AICategorizeExpensesResponse,
   EStatementType,
   IExpensesCategory,
   IProcessExpenseFileRequest,
@@ -100,6 +102,17 @@ export class ExpensesService implements OnModuleInit {
         error: { message: e.message },
       };
     }
+  }
+
+  async categorizeExpensesWithAI(
+    body: AICategorizeExpensesRequest,
+    userId: string,
+  ): Promise<AICategorizeExpensesResponse> {
+    const results = await this.statementService.categorizeExpensesWithAI(
+      body?.items || [],
+      userId,
+    );
+    return { results };
   }
   getMonthRange = (year: number, month: number) => {
     return {

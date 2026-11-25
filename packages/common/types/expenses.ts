@@ -67,6 +67,27 @@ export interface ProcessExpenseFileResponse {
   error?: { message: string };
 }
 
+export interface AICategorizeExpenseItem {
+  id: string;
+  statementRecord: string;
+  currentCategory?: string;
+  amount?: number;
+}
+
+export interface AICategorizeExpensesRequest {
+  items: AICategorizeExpenseItem[];
+}
+
+export interface AICategorizedExpenseResult {
+  id: string;
+  category: string;
+}
+
+export interface AICategorizeExpensesResponse {
+  results: AICategorizedExpenseResult[];
+  error?: { message: string };
+}
+
 // ============================================================
 // 💰 INCOME TYPES
 // ============================================================
