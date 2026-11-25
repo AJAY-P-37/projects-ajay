@@ -13,13 +13,21 @@
         "../frontend",
         "../../packages"
       ],
-      "predeploy": ["npm --prefix apps/backend run build"]
+      "predeploy": [
+        "npm --prefix apps/backend run build"
+      ]
     }
   ],
   "hosting": {
     "public": "apps/frontend/dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "predeploy": ["npm --prefix apps/frontend run build:prod"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "predeploy": [
+      "npm --prefix apps/frontend run build:prod"
+    ],
     "rewrites": [
       {
         "source": "/api{,/**}",

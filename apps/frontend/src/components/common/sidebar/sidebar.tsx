@@ -10,6 +10,9 @@ import {
   IndianRupee,
   Pencil,
   Split,
+  Wallet2,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 
 import {
@@ -69,6 +72,39 @@ const data = {
         {
           title: "Export and Import",
           url: "/projects/expenses/exportImport",
+          icon: Download,
+        },
+      ],
+    },
+    {
+      title: "Income Tracking",
+      url: "#",
+      icon: Wallet2,
+      isActive: false,
+      items: [
+        {
+          title: "Add sources",
+          url: "/projects/income/addSources",
+          icon: Split,
+        },
+        {
+          title: "Update Income",
+          url: "/projects/income/updateIncome",
+          icon: Pencil,
+        },
+        {
+          title: "Financial Insights",
+          url: "/projects/income/financialInsights",
+          icon: BarChart3,
+        },
+        {
+          title: "Multi-Year Trajectory",
+          url: "/projects/income/multiYearTrajectory",
+          icon: TrendingUp,
+        },
+        {
+          title: "Export and Import",
+          url: "/projects/income/exportImport",
           icon: Download,
         },
       ],

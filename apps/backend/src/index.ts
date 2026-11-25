@@ -34,6 +34,15 @@ server.use((req, res, next) => {
 
 server.use(cookieParser());
 
+// Strip /api prefix if present so requests routed via Firebase Hosting (/api/...)
+// seamlessly map to NestJS controllers (@Controller("auth"), @Controller("expenses"), etc.)
+server.use((req, res, next) => {
+  if (req.url.startsWith("/api/")) {
+    req.url = req.url.replace(/^\/api/, "");
+  }
+  next();
+});
+
 const createNestServer = async (expressInstance: express.Express) => {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(expressInstance));
   // app.use(cookieParser());

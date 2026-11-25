@@ -7,12 +7,13 @@ import {
   SelectValue,
 } from "shadcn-lib/dist/components/ui/select";
 
-export const EARLIEST_YEAR = 2023;
+/** @deprecated Use useUserSettings().startYear instead */
+export const EARLIEST_YEAR = 2021;
 export const CURRENT_YEAR = new Date().getFullYear();
 
-export function allYears(): number[] {
+export function allYears(startYear: number = EARLIEST_YEAR): number[] {
   const list: number[] = [];
-  for (let y = EARLIEST_YEAR; y <= CURRENT_YEAR; y++) list.push(y);
+  for (let y = startYear; y <= CURRENT_YEAR; y++) list.push(y);
   return list;
 }
 

@@ -165,6 +165,7 @@ interface TableActionsProps<TData extends BaseRow<TData>, TValue> {
   rowRefs: RefObject<Record<string, HTMLTableRowElement | null>>;
 }
 export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
+  name,
   columns,
   rows,
   setRows,
@@ -230,7 +231,8 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
       return;
     }
     if (typeof actions.exportRows === "function") {
-      actions.exportRows(rows);
+      const exportFn = actions.exportRows as (data: TData[]) => void;
+      exportFn(rows);
       return;
     }
     const fileName = actions.exportFileName || `${name || "expenses"}-export.xlsx`;
@@ -316,6 +318,38 @@ export const TableActionsHeader = <TData extends BaseRow<TData>, TValue>({
               <Check />
             </Button>
           ))}
+        {actions.editRow && (
+          <Popover content='Save all editing rows'>
+            <Button
+              size={size}
+              variant={variant}
+              onClick={() => {
+                const editingCount = rows.filter((r) => r._editing).length;
+                if (editingCount === 0) {
+                  Toast.info("No rows are currently in edit mode");
+                  return;
+                }
+                setRows((prev) => {
+                  const committed = prev.map((r) =>
+                    r._editing
+                      ? {
+                          ...r._draft,
+                          id: r.id,
+                          _editing: false,
+                          _draft: { ...r._draft },
+                        }
+                      : r,
+                  );
+                  validateAll(committed, tableSchema, setErrors);
+                  return committed;
+                });
+                Toast.success(`Saved all ${editingCount} row(s)`);
+              }}
+            >
+              <SaveIcon /> Save All
+            </Button>
+          </Popover>
+        )}
       </div>
     </div>
   ) : null;

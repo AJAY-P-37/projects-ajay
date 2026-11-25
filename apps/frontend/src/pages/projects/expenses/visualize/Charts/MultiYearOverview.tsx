@@ -10,13 +10,15 @@ import {
 } from "shadcn-lib/dist/components/ui/card";
 import { MultiYearTrendAreaChart } from "./MultiYearTrendAreaChart";
 import { MultiYearTotalInvestmentLineChart } from "./MultiYearTotalInvestmentLineChart";
-import { YearRangeSelect, EARLIEST_YEAR, CURRENT_YEAR, allYears } from "./YearRangeSelect";
+import { YearRangeSelect, CURRENT_YEAR, allYears } from "./YearRangeSelect";
+import { useUserSettings } from "@/hooks/useUserSettings";
 
 export const MultiYearOverview = () => {
-  const [startYear, setStartYear] = useState<number>(EARLIEST_YEAR);
+  const { startYear: earliestYear } = useUserSettings();
+  const [startYear, setStartYear] = useState<number>(earliestYear);
   const [endYear, setEndYear] = useState<number>(CURRENT_YEAR);
 
-  const fullYearList = allYears();
+  const fullYearList = allYears(earliestYear);
 
   const service = new ExpensesService();
   const results = useQueries({

@@ -25,6 +25,10 @@ export class ExpensesService implements OnModuleInit {
   private statementService!: StatementParsingService;
 
   private getMirrorDatabaseName(): string | null {
+    if (process.env.MIRROR_DATABASE_NAME) {
+      return process.env.MIRROR_DATABASE_NAME;
+    }
+
     const env = (process.env.ENV || process.env.NODE_ENV || "DEV").toUpperCase();
 
     if (env === "PROD" || env === "PRODUCTION") {
@@ -35,7 +39,7 @@ export class ExpensesService implements OnModuleInit {
       return "transaction_db_PROD";
     }
 
-    return process.env.MIRROR_DATABASE_NAME || null;
+    return null;
   }
 
   private async initializeMirrorModels() {

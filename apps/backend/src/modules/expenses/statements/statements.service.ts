@@ -190,6 +190,10 @@ export class StatementParsingService {
     statementRecord: string,
     userId: string,
   ): Promise<string> {
+    if (process.env.ENABLE_AI_CATEGORIZATION !== "true") {
+      return "Unknown";
+    }
+
     try {
       this.ExpensesCategoriesModel = await getCategoryModel();
       const categories = (await this.ExpensesCategoriesModel.find({ userId })).map(

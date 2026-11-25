@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ExpensesService from "@/services/ExpensesService";
 import {
@@ -56,12 +57,13 @@ const makeBulkExpenseRowSchema = (categories: string[]) =>
 
 export const ExportImportExpenses = () => {
   const currentYr = new Date().getFullYear();
+  const { startYear: userStartYear } = useUserSettings();
   const [activeTab, setActiveTab] = useState<"export" | "import">("export");
 
   // Export filters
   const [exportEntireData, setExportEntireData] = useState<boolean>(true);
   const [startMonth, setStartMonth] = useState<string>("0");
-  const [startYear, setStartYear] = useState<string>("2023");
+  const [startYear, setStartYear] = useState<string>(String(userStartYear));
   const [endMonth, setEndMonth] = useState<string>("11");
   const [endYear, setEndYear] = useState<string>(String(currentYr));
 

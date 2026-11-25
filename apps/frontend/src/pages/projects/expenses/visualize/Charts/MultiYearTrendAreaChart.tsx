@@ -21,13 +21,13 @@ import {
 import { Loader2 } from "lucide-react";
 import {
   YearRangeSelect,
-  EARLIEST_YEAR,
   CURRENT_YEAR,
   allYears,
   fmtCurrency,
   getYearColor,
   YEAR_COLORS,
 } from "./YearRangeSelect";
+import { useUserSettings } from "@/hooks/useUserSettings";
 
 const MONTH_NAMES = [
   "January",
@@ -62,11 +62,12 @@ export const MultiYearTrendAreaChart = ({
   results: propResults,
   isLoading: propIsLoading,
 }: MultiYearChartProps) => {
-  const [startYear, setStartYear] = useState<number>(EARLIEST_YEAR);
+  const { startYear: earliestYear } = useUserSettings();
+  const [startYear, setStartYear] = useState<number>(earliestYear);
   const [endYear, setEndYear] = useState<number>(CURRENT_YEAR);
 
   const isStandalone = !propResults;
-  const fullYearList = propFullYearList ?? allYears();
+  const fullYearList = propFullYearList ?? allYears(earliestYear);
 
   const service = new ExpensesService();
   const queriesResults = useQueries({

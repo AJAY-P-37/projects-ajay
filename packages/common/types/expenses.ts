@@ -54,14 +54,65 @@ export interface IExpenseHistory {
 }
 
 export interface ProcessedExpense {
+  id?: string;
   date?: string;
   category: string;
   amount: number;
-  statementRecord: string;
+  statementRecord?: string;
   statementType?: EStatementType;
 }
 
 export interface ProcessExpenseFileResponse {
   processedData: ProcessedExpense[];
   error?: { message: string };
+}
+
+// ============================================================
+// 💰 INCOME TYPES
+// ============================================================
+
+export enum EIncomeSource {
+  salary = "Salary",
+  freelance = "Freelance",
+  investmentReturn = "Investment Return",
+  rental = "Rental",
+  gift = "Gift",
+  other = "Other",
+}
+
+export const incomeSourceOptions = [
+  { value: EIncomeSource.salary, label: "Salary" },
+  { value: EIncomeSource.freelance, label: "Freelance" },
+  { value: EIncomeSource.investmentReturn, label: "Investment Return" },
+  { value: EIncomeSource.rental, label: "Rental" },
+  { value: EIncomeSource.gift, label: "Gift" },
+  { value: EIncomeSource.other, label: "Other" },
+];
+
+export interface IIncome {
+  userId?: string;
+  date: Date;
+  source: string;   // EIncomeSource or custom user-defined source
+  amount: number;
+  note?: string;
+}
+
+export interface IIncomeSourceSchema {
+  userId: string;
+  source: string;
+  description?: string;
+}
+
+export interface IIncomeSource {
+  source: string;
+  description?: string;
+}
+
+// ============================================================
+// ⚙️ USER SETTINGS TYPES
+// ============================================================
+
+export interface IUserSettings {
+  startYear: number;
+  initialBalance: number;
 }

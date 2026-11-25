@@ -1,4 +1,9 @@
 /* @import "tailwindcss"; */
+
+/* Prevent Chrome swipe-left/right back/forward navigation */
+html, body {
+  overscroll-behavior-x: none;
+}
 .recharts-cartesian-axis-tick-value {
   fill: rgba(255, 255, 255, 1); /* dark mode */
   font-size: 12px;

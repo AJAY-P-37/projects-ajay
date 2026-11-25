@@ -12,18 +12,20 @@ export default class FirebaseController {
   public sendAuthenticatedResponse = (res: Response, user: IUser | null, sessionCookie: string) => {
     if (user) {
       const { uid, name, email, picture, authType, role } = user;
+      const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none" as const,
+        path: "/",
+        maxAge: expiresIn,
+      };
+
       return (
         res
           .status(200)
-          // Create a signed cookie (session)
-          // 4. Set secure HTTP-only cookie
-          .cookie("session", sessionCookie, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            path: "/",
-            maxAge: expiresIn,
-          })
+          // Set __session (passed through by Firebase Hosting CDN) & session (fallback)
+          .cookie("__session", sessionCookie, cookieOptions)
+          .cookie("session", sessionCookie, cookieOptions)
           .json({
             message: "Authenticated",
             user: { uid, name, email, picture, authType, role },
@@ -37,7 +39,7 @@ export default class FirebaseController {
   @Get("isAuthenticated")
   public async isAuthenticated(@Req() req: any, @Res() res: Response) {
     try {
-      const sessionCookie = req.cookies?.session;
+      const sessionCookie = req.cookies?.__session || req.cookies?.session;
       if (!sessionCookie) {
         throw new UnauthorizedException("No session cookie");
       }
@@ -76,12 +78,14 @@ export default class FirebaseController {
   /** -------------------------- SIGNOUT ----------------------------- */
   @Post("signout")
   async signout(@Res() res: Response) {
-    res.clearCookie("session", {
+    const clearOptions = {
       httpOnly: true,
       secure: true,
-      sameSite: "none",
+      sameSite: "none" as const,
       path: "/",
-    });
+    };
+    res.clearCookie("__session", clearOptions);
+    res.clearCookie("session", clearOptions);
 
     return res.status(200).send({ message: "Logged out" });
   }
